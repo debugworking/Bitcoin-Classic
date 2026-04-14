@@ -21,6 +21,9 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QStatusTipEvent>
+#include <QTimer>
+#include <QRegularExpression>
+#include <QProcess>
 
 #include <algorithm>
 #include <map>
@@ -145,7 +148,90 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 {
     ui->setupUi(this);
 
-    // use a SingleColorIcon for the "out of sync warning" icon
+    ui->labelHashRate->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    ui->labelConnections->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->labelBlockHeight->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    // ====== 平滑刷新算力挖矿逻辑（最终版）======
+
+    static QProcess* minerProcess = nullptr;
+    static bool mining = false;
+    static QString latestHashrate = "0 H/s";
+    static QTimer* hashrateTimer = nullptr;
+
+    connect(ui->startMiningButton, &QPushButton::clicked, this, [this]() {
+
+        if (!mining) {
+
+            minerProcess = new QProcess(this);
+            minerProcess->setProcessChannelMode(QProcess::MergedChannels);
+
+#ifdef Q_OS_WIN
+            minerProcess->setCreateProcessArgumentsModifier(
+                [](QProcess::CreateProcessArguments *args) {
+                    args->flags |= CREATE_NO_WINDOW;
+                });
+#endif
+
+            QString program = "gbt_miner.exe"; // 如在 runtime 目录改为 "runtime/gbt_miner.exe"
+
+            QStringList arguments;
+            arguments << "--rpcport=28466"
+                      << "--rpcuser=user"
+                      << "--rpcpassword=pass"
+                      << "--submit-to=127.0.0.1:28466";
+
+            // 读取输出（只更新变量，不直接刷新UI）
+            QObject::connect(minerProcess, &QProcess::readyReadStandardOutput, this, [this]() {
+                QByteArray data = minerProcess->readAllStandardOutput();
+                QString output = QString::fromUtf8(data);
+
+                QRegularExpression regex("([0-9\\.]+\\s*H/s)");
+                QRegularExpressionMatch match = regex.match(output);
+                if (match.hasMatch()) {
+                    latestHashrate = match.captured(1);
+                }
+            });
+
+            minerProcess->start(program, arguments);
+
+            // 定时器：每1秒刷新UI一次
+            hashrateTimer = new QTimer(this);
+            QObject::connect(hashrateTimer, &QTimer::timeout, this, [this]() {
+                ui->miningStatusLabel->setText(tr("Mining..."));
+                ui->labelHashRate->setText(tr("Hash Rate: %1").arg(latestHashrate));
+            });
+            hashrateTimer->start(1000);
+
+            ui->startMiningButton->setText(tr("Stop Mining"));
+            ui->miningStatusLabel->setText(tr("Mining..."));
+            ui->labelHashRate->setText(tr("Hash Rate: reading..."));
+
+            mining = true;
+
+        } else {
+
+            if (minerProcess) {
+                minerProcess->kill();
+                minerProcess->deleteLater();
+                minerProcess = nullptr;
+            }
+
+            if (hashrateTimer) {
+                hashrateTimer->stop();
+                delete hashrateTimer;
+                hashrateTimer = nullptr;
+            }
+
+            ui->startMiningButton->setText(tr("Start Mining"));
+            ui->miningStatusLabel->setText(tr("Stopped"));
+            ui->labelHashRate->setText(tr("Hash Rate: 0 H/s"));
+
+            mining = false;
+        }
+
+    });
+// use a SingleColorIcon for the "out of sync warning" icon
     QIcon icon = m_platform_style->SingleColorIcon(QStringLiteral(":/icons/warning"));
     ui->labelTransactionsStatus->setIcon(icon);
     ui->labelWalletStatus->setIcon(icon);
@@ -245,12 +331,20 @@ void OverviewPage::updateWatchOnlyLabels(bool showWatchOnly)
 void OverviewPage::setClientModel(ClientModel *model)
 {
     this->clientModel = model;
+    
     if (model) {
+        connect(model, &ClientModel::numConnectionsChanged,
+                this, &OverviewPage::updateConnections);
+
+        connect(model, &ClientModel::numBlocksChanged,
+                this, &OverviewPage::updateBlockHeight);
+
         // Show warning, for example if this is a prerelease version
         connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts);
         updateAlerts(model->getStatusBarWarnings());
 
-        connect(model->getOptionsModel(), &OptionsModel::fontForMoneyChanged, this, &OverviewPage::setMonospacedFont);
+        connect(model->getOptionsModel(), &OptionsModel::fontForMoneyChanged,
+                this, &OverviewPage::setMonospacedFont);
         setMonospacedFont(clientModel->getOptionsModel()->getFontForMoney());
     }
 }
@@ -350,4 +444,14 @@ void OverviewPage::setMonospacedFont(const QFont& f)
     ui->labelWatchPending->setFont(f);
     ui->labelWatchImmature->setFont(f);
     ui->labelWatchTotal->setFont(f);
+}
+
+void OverviewPage::updateConnections(int count)
+{
+    ui->labelConnections->setText(tr("Connections: %1").arg(count));
+}
+
+void OverviewPage::updateBlockHeight(int count, const QDateTime&, double, bool)
+{
+    ui->labelBlockHeight->setText(tr("Block Height: %1").arg(count));
 }

@@ -66,6 +66,8 @@ private Q_SLOTS:
     void updateAlerts(const QString &warnings);
     void updateWatchOnlyLabels(bool showWatchOnly);
     void setMonospacedFont(const QFont&);
+    void updateConnections(int count);
+    void updateBlockHeight(int count, const QDateTime& blockDate, double nVerificationProgress, bool header);
 };
 
 #endif // BITCOIN_QT_OVERVIEWPAGE_H

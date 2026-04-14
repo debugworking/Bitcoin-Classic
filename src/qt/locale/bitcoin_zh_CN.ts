@@ -4969,4 +4969,53 @@ Unable to restore backup of wallet.</source>
         <translation type="unfinished">无法写入设置文件</translation>
     </message>
 </context>
+
+<context>
+    <name>OverviewPage</name>
+    <message>
+        <source>Start Mining</source>
+        <translation>开始挖矿</translation>
+    </message>
+    <message>
+        <source>Stop Mining</source>
+        <translation>停止挖矿</translation>
+    </message>
+    <message>
+        <source>Mining...</source>
+        <translation>挖矿中...</translation>
+    </message>
+    <message>
+        <source>Stopped</source>
+        <translation>已停止</translation>
+    </message>
+    <message>
+        <source>Hash Rate: 0 H/s</source>
+        <translation>当前算力：0 H/s</translation>
+    </message>
+    <message>
+        <source>Hash Rate: reading...</source>
+        <translation>当前算力：读取中...</translation>
+    </message>
+    <message>
+        <source>Hash Rate: %1</source>
+        <translation>当前算力：%1</translation>
+    </message>
+    <message>
+        <source>Connections: 0</source>
+        <translation>连接节点：0</translation>
+    </message>
+    <message>
+        <source>Connections: %1</source>
+        <translation>连接节点：%1</translation>
+    </message>
+    <message>
+        <source>Block Height: 0</source>
+        <translation>区块高度：0</translation>
+    </message>
+    <message>
+        <source>Block Height: %1</source>
+        <translation>区块高度：%1</translation>
+    </message>
+</context>
+
 </TS>
