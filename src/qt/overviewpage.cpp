@@ -314,7 +314,10 @@ void OverviewPage::setClientModel(ClientModel *model)
 
     if (model) {
         connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections);
-        connect(model, &ClientModel::numBlocksChanged, this, &OverviewPage::updateBlockHeight);
+        connect(model, &ClientModel::numBlocksChanged, this,
+        [this](int count, const QDateTime&, double, SyncType, SynchronizationState) {
+            ui->labelBlockHeight->setText(tr("Block Height: %1").arg(count));
+        });
         connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts);
         updateAlerts(model->getStatusBarWarnings());
 
@@ -421,12 +424,4 @@ void OverviewPage::updateConnections(int count)
     ui->labelConnections->setText(tr("Connections: %1").arg(count));
 }
 
-void OverviewPage::updateBlockHeight(int count,
-                                     const QDateTime&,
-                                     double,
-                                     SyncType,
-                                     SynchronizationState)
-{
-    ui->labelBlockHeight->setText(tr("Block Height: %1").arg(count));
-}
 

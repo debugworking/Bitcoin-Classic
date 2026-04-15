@@ -63,11 +63,6 @@ private Q_SLOTS:
     void updateWatchOnlyLabels(bool showWatchOnly);
     void setMonospacedFont(const QFont&);
     void updateConnections(int count);
-    void updateBlockHeight(int count,
-                       const QDateTime& blockDate,
-                       double nVerificationProgress,
-                       SyncType header,
-                       SynchronizationState sync_state);
 };
 
 #endif
