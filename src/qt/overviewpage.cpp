@@ -421,7 +421,12 @@ void OverviewPage::updateConnections(int count)
     ui->labelConnections->setText(tr("Connections: %1").arg(count));
 }
 
-void OverviewPage::updateBlockHeight(int count, const QDateTime&, double, SyncType, SynchronizationState)
+void OverviewPage::updateBlockHeight(int count,
+                                     const QDateTime&,
+                                     double,
+                                     bool,
+                                     SynchronizationState)
 {
     ui->labelBlockHeight->setText(tr("Block Height: %1").arg(count));
 }
+
