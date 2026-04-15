@@ -1,8 +1,11 @@
+// Copyright (c) 2011-2022 The Bitcoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_QT_OVERVIEWPAGE_H
 #define BITCOIN_QT_OVERVIEWPAGE_H
 
 #include <interfaces/wallet.h>
-#include <interfaces/node.h>
 
 #include <QWidget>
 #include <memory>
@@ -21,6 +24,7 @@ QT_BEGIN_NAMESPACE
 class QModelIndex;
 QT_END_NAMESPACE
 
+/** Overview ("home") page widget */
 class OverviewPage : public QWidget
 {
     Q_OBJECT
@@ -63,7 +67,8 @@ private Q_SLOTS:
     void updateWatchOnlyLabels(bool showWatchOnly);
     void setMonospacedFont(const QFont&);
     void updateConnections(int count);
-    void updateBlockHeight(int count, const QDateTime& blockDate, double nVerificationProgress, SyncType syncType, SynchronizationState syncState);
+    void updateBlockHeight(int count, const QDateTime& blockDate, double nVerificationProgress, bool header);
 };
 
-#endif
+#endif // BITCOIN_QT_OVERVIEWPAGE_H
+void updateBlockHeight(int count, const QDateTime& blockDate, double nVerificationProgress, SyncType syncType, SynchronizationState syncState);
