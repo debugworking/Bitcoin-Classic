@@ -66,8 +66,8 @@ private Q_SLOTS:
     void updateBlockHeight(int count,
                        const QDateTime& blockDate,
                        double nVerificationProgress,
-                       bool headers,
-                       SynchronizationState syncState);
+                       SyncType header,
+                       SynchronizationState sync_state);
 };
 
 #endif
