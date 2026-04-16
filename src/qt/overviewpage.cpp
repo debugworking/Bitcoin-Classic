@@ -397,8 +397,12 @@ void OverviewPage::setClientModel(ClientModel* model)
     this->clientModel = model;
 
     if (model) {
-        connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections, Qt::UniqueConnection);
-        connect(model, &ClientModel::numBlocksChanged, this, &OverviewPage::updateBlockHeight, Qt::UniqueConnection);
+      connect(model, &ClientModel::numBlocksChanged,
+        this,
+        [this](int count, const QDateTime& blockDate, double nVerificationProgress, SyncType header, SynchronizationState sync_state) {
+            updateBlockHeight(count, blockDate, nVerificationProgress, 0, sync_state);
+        },
+        Qt::UniqueConnection);
         connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts, Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
 
@@ -547,7 +551,7 @@ void OverviewPage::refreshAllMiningUi()
 void OverviewPage::updateBlockHeight(int count,
                                      const QDateTime&,
                                      double,
-                                     SyncType,
+                                     int,
                                      SynchronizationState)
 {
     ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +

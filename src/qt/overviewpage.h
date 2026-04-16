@@ -70,7 +70,7 @@ private Q_SLOTS:
     void updateBlockHeight(int count,
                            const QDateTime& blockDate,
                            double nVerificationProgress,
-                           SyncType header,
+                           int header,
                            SynchronizationState sync_state);
 };
 
