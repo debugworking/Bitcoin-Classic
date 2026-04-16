@@ -14,20 +14,35 @@
 
 #include <QAbstractItemDelegate>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QPainter>
-#include <QStatusTipEvent>
-#include <QTimer>
-#include <QRegularExpression>
 #include <QProcess>
+#include <QRegularExpression>
+#include <QStatusTipEvent>
+#include <QTextDocument>
+#include <QTimer>
 
 #include <algorithm>
 #include <map>
+#include <vector>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 #define DECORATION_SIZE 54
 #define NUM_ITEMS 5
 
 Q_DECLARE_METATYPE(interfaces::WalletBalances)
+
+namespace {
+QProcess* g_minerProcess = nullptr;
+bool g_isMining = false;
+QString g_latestHashrate = "0 H/s";
+QTimer* g_hashrateTimer = nullptr;
+std::vector<OverviewPage*> g_overviewPages;
+}
 
 class TxViewDelegate : public QAbstractItemDelegate
 {
@@ -39,7 +54,7 @@ public:
         connect(this, &TxViewDelegate::width_changed, this, &TxViewDelegate::sizeHintChanged);
     }
 
-    inline void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    inline void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
         painter->save();
 
@@ -90,28 +105,28 @@ public:
             amountText = QString("[") + amountText + QString("]");
         }
 
-        QRect amount_bounding_rect;
-        painter->drawText(amountRect, Qt::AlignRight | Qt::AlignVCenter, amountText, &amount_bounding_rect);
+        QRect amountBoundingRect;
+        painter->drawText(amountRect, Qt::AlignRight | Qt::AlignVCenter, amountText, &amountBoundingRect);
 
         painter->setPen(option.palette.color(QPalette::Text));
-        QRect date_bounding_rect;
-        painter->drawText(amountRect, Qt::AlignLeft | Qt::AlignVCenter, GUIUtil::dateTimeStr(date), &date_bounding_rect);
+        QRect dateBoundingRect;
+        painter->drawText(amountRect, Qt::AlignLeft | Qt::AlignVCenter, GUIUtil::dateTimeStr(date), &dateBoundingRect);
 
-        const int minimum_width = 1.4 * date_bounding_rect.width() + amount_bounding_rect.width();
+        const int minimumWidth = static_cast<int>(1.4 * dateBoundingRect.width() + amountBoundingRect.width());
         const auto search = m_minimum_width.find(index.row());
-        if (search == m_minimum_width.end() || search->second != minimum_width) {
-            m_minimum_width[index.row()] = minimum_width;
+        if (search == m_minimum_width.end() || search->second != minimumWidth) {
+            m_minimum_width[index.row()] = minimumWidth;
             Q_EMIT width_changed(index);
         }
 
         painter->restore();
     }
 
-    inline QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &index) const override
+    inline QSize sizeHint(const QStyleOptionViewItem&, const QModelIndex& index) const override
     {
         const auto search = m_minimum_width.find(index.row());
-        const int minimum_text_width = search == m_minimum_width.end() ? 0 : search->second;
-        return {DECORATION_SIZE + 8 + minimum_text_width, DECORATION_SIZE};
+        const int minimumTextWidth = search == m_minimum_width.end() ? 0 : search->second;
+        return {DECORATION_SIZE + 8 + minimumTextWidth, DECORATION_SIZE};
     }
 
     BitcoinUnit unit{BitcoinUnit::BTC};
@@ -126,7 +141,7 @@ private:
 
 #include <qt/overviewpage.moc>
 
-OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) :
+OverviewPage::OverviewPage(const PlatformStyle* platformStyle, QWidget* parent) :
     QWidget(parent),
     ui(new Ui::OverviewPage),
     m_platform_style{platformStyle},
@@ -137,74 +152,140 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelHashRate->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->labelConnections->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->labelBlockHeight->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    ui->miningStatusLabel->setTextFormat(Qt::RichText);
 
-    static QProcess* minerProcess = nullptr;
-    static bool mining = false;
-    static QString latestHashrate = "0 H/s";
-    static QTimer* hashrateTimer = nullptr;
+    g_overviewPages.push_back(this);
 
     connect(ui->startMiningButton, &QPushButton::clicked, this, [this]() {
-        if (!mining) {
-            minerProcess = new QProcess(this);
-            minerProcess->setProcessChannelMode(QProcess::MergedChannels);
+        if (!g_isMining) {
+            if (g_minerProcess) {
+                g_minerProcess->deleteLater();
+                g_minerProcess = nullptr;
+            }
+
+            g_minerProcess = new QProcess();
+            g_minerProcess->setProcessChannelMode(QProcess::MergedChannels);
 
 #ifdef Q_OS_WIN
-            minerProcess->setCreateProcessArgumentsModifier(
-                [](QProcess::CreateProcessArguments *args) {
+            g_minerProcess->setCreateProcessArgumentsModifier(
+                [](QProcess::CreateProcessArguments* args) {
                     args->flags |= CREATE_NO_WINDOW;
                 });
 #endif
 
-            QString program = QCoreApplication::applicationDirPath() + "/gbt_miner.exe";
+            const QString program = QCoreApplication::applicationDirPath() + "/gbt_miner.exe";
             QStringList arguments;
             arguments << "--rpcport=28466"
                       << "--rpcuser=user"
                       << "--rpcpassword=pass"
                       << "--submit-to=127.0.0.1:28466";
 
-            QObject::connect(minerProcess, &QProcess::readyReadStandardOutput, this, [this]() {
-                QByteArray data = minerProcess->readAllStandardOutput();
-                QString output = QString::fromUtf8(data);
-                QRegularExpression regex("([0-9\\.]+\\s*H/s)");
-                QRegularExpressionMatch match = regex.match(output);
+            QObject::connect(g_minerProcess, &QProcess::readyRead, this, []() {
+                if (!g_minerProcess) return;
+
+                const QString output = QString::fromUtf8(g_minerProcess->readAll());
+                if (output.isEmpty()) return;
+
+                QRegularExpression regex1(R"(hash(?:ing)?[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*(?:/s|H/s|KH/s|MH/s|GH/s|TH/s))",
+                                          QRegularExpression::CaseInsensitiveOption);
+                QRegularExpression regex2(R"(([0-9]+(?:\.[0-9]+)?\s*[kKmMgGtT]?\s*H/s))");
+                QRegularExpression regex3(R"(([0-9]+(?:\.[0-9]+)?\s*/s))");
+
+                QRegularExpressionMatch match = regex1.match(output);
                 if (match.hasMatch()) {
-                    latestHashrate = match.captured(1);
+                    g_latestHashrate = match.captured(1) + " H/s";
+                    OverviewPage::refreshAllMiningUi();
+                    return;
+                }
+
+                match = regex2.match(output);
+                if (match.hasMatch()) {
+                    g_latestHashrate = match.captured(1).simplified();
+                    OverviewPage::refreshAllMiningUi();
+                    return;
+                }
+
+                match = regex3.match(output);
+                if (match.hasMatch()) {
+                    g_latestHashrate = match.captured(1).simplified();
+                    OverviewPage::refreshAllMiningUi();
                 }
             });
 
-            minerProcess->start(program, arguments);
+            QObject::connect(g_minerProcess,
+                             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                             this,
+                             [](int, QProcess::ExitStatus) {
+                                 g_isMining = false;
+                                 g_latestHashrate = "0 H/s";
 
-            hashrateTimer = new QTimer(this);
-            QObject::connect(hashrateTimer, &QTimer::timeout, this, [this]() {
-                ui->miningStatusLabel->setText(tr("Mining..."));
-                ui->labelHashRate->setText(tr("Hash Rate: %1").arg(latestHashrate));
+                                 if (g_hashrateTimer) {
+                                     g_hashrateTimer->stop();
+                                     delete g_hashrateTimer;
+                                     g_hashrateTimer = nullptr;
+                                 }
+
+                                 if (g_minerProcess) {
+                                     g_minerProcess->deleteLater();
+                                     g_minerProcess = nullptr;
+                                 }
+
+                                 OverviewPage::refreshAllMiningUi();
+                             });
+
+            g_minerProcess->start(program, arguments);
+
+            if (!g_minerProcess->waitForStarted(3000)) {
+                if (g_minerProcess) {
+                    g_minerProcess->deleteLater();
+                    g_minerProcess = nullptr;
+                }
+                g_isMining = false;
+                g_latestHashrate = "0 H/s";
+                OverviewPage::refreshAllMiningUi();
+                return;
+            }
+
+            if (g_hashrateTimer) {
+                g_hashrateTimer->stop();
+                delete g_hashrateTimer;
+                g_hashrateTimer = nullptr;
+            }
+
+            g_hashrateTimer = new QTimer();
+            QObject::connect(g_hashrateTimer, &QTimer::timeout, this, []() {
+                OverviewPage::refreshAllMiningUi();
             });
-            hashrateTimer->start(1000);
+            g_hashrateTimer->start(1000);
 
-            ui->startMiningButton->setText(tr("Stop Mining"));
-            ui->miningStatusLabel->setText(tr("Mining..."));
-            ui->labelHashRate->setText(tr("Hash Rate: reading..."));
-
-            mining = true;
+            g_latestHashrate = "reading...";
+            g_isMining = true;
         } else {
-            if (minerProcess) {
-                minerProcess->kill();
-                minerProcess->deleteLater();
-                minerProcess = nullptr;
+            if (g_hashrateTimer) {
+                g_hashrateTimer->stop();
+                delete g_hashrateTimer;
+                g_hashrateTimer = nullptr;
             }
 
-            if (hashrateTimer) {
-                hashrateTimer->stop();
-                delete hashrateTimer;
-                hashrateTimer = nullptr;
+            if (g_minerProcess) {
+                g_minerProcess->terminate();
+                if (!g_minerProcess->waitForFinished(3000)) {
+                    g_minerProcess->kill();
+                    g_minerProcess->waitForFinished(1000);
+                }
+                g_minerProcess->deleteLater();
+                g_minerProcess = nullptr;
             }
 
-            ui->startMiningButton->setText(tr("Start Mining"));
-            ui->miningStatusLabel->setText(tr("Stopped"));
-            ui->labelHashRate->setText(tr("Hash Rate: 0 H/s"));
+#ifdef Q_OS_WIN
+            QProcess::execute("taskkill", QStringList() << "/F" << "/IM" << "gbt_miner.exe");
+#endif
 
-            mining = false;
+            g_latestHashrate = "0 H/s";
+            g_isMining = false;
         }
+
+        OverviewPage::refreshAllMiningUi();
     });
 
     QIcon icon = m_platform_style->SingleColorIcon(QStringLiteral(":/icons/warning"));
@@ -221,14 +302,17 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     showOutOfSyncWarning(true);
     connect(ui->labelWalletStatus, &QPushButton::clicked, this, &OverviewPage::outOfSyncWarningClicked);
     connect(ui->labelTransactionsStatus, &QPushButton::clicked, this, &OverviewPage::outOfSyncWarningClicked);
+
+    updateMiningUI();
 }
 
 OverviewPage::~OverviewPage()
 {
+    g_overviewPages.erase(std::remove(g_overviewPages.begin(), g_overviewPages.end(), this), g_overviewPages.end());
     delete ui;
 }
 
-void OverviewPage::handleTransactionClicked(const QModelIndex &index)
+void OverviewPage::handleTransactionClicked(const QModelIndex& index)
 {
     if (filter) {
         Q_EMIT transactionClicked(filter->mapToSource(index));
@@ -308,28 +392,33 @@ void OverviewPage::updateWatchOnlyLabels(bool showWatchOnly)
     }
 }
 
-void OverviewPage::setClientModel(ClientModel *model)
+void OverviewPage::setClientModel(ClientModel* model)
 {
     this->clientModel = model;
 
     if (model) {
-        connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections);
-        connect(model, &ClientModel::numBlocksChanged, this,
-        [this](int count, const QDateTime&, double, SyncType, SynchronizationState) {
-            ui->labelBlockHeight->setText(tr("Block Height: %1").arg(count));
-        });
-        connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts);
+        connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections, Qt::UniqueConnection);
+        connect(model, &ClientModel::numBlocksChanged, this, &OverviewPage::updateBlockHeight, Qt::UniqueConnection);
+        connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts, Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
+
+        updateConnections(model->getNumConnections());
+        ui->labelBlockHeight->setText(tr("Block Height: %1").arg(model->getNumBlocks()));
 
         if (model->getOptionsModel()) {
             connect(model->getOptionsModel(), &OptionsModel::fontForMoneyChanged,
-                    this, &OverviewPage::setMonospacedFont);
+                    this, &OverviewPage::setMonospacedFont, Qt::UniqueConnection);
             setMonospacedFont(model->getOptionsModel()->getFontForMoney());
         }
+    } else {
+        ui->labelConnections->setText(tr("Connections: 0"));
+        ui->labelBlockHeight->setText(tr("Block Height: 0"));
     }
+
+    updateMiningUI();
 }
 
-void OverviewPage::setWalletModel(WalletModel *model)
+void OverviewPage::setWalletModel(WalletModel* model)
 {
     this->walletModel = model;
     if (model && model->getOptionsModel()) {
@@ -360,6 +449,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
     }
 
     updateDisplayUnit();
+    updateMiningUI();
 }
 
 void OverviewPage::changeEvent(QEvent* e)
@@ -395,7 +485,7 @@ void OverviewPage::updateDisplayUnit()
     }
 }
 
-void OverviewPage::updateAlerts(const QString &warnings)
+void OverviewPage::updateAlerts(const QString& warnings)
 {
     ui->labelAlerts->setVisible(!warnings.isEmpty());
     ui->labelAlerts->setText(warnings);
@@ -424,4 +514,42 @@ void OverviewPage::updateConnections(int count)
     ui->labelConnections->setText(tr("Connections: %1").arg(count));
 }
 
+void OverviewPage::updateMiningUI()
+{
+    if (g_isMining) {
+        ui->startMiningButton->setText(tr("Stop Mining"));
+        ui->miningStatusLabel->setText(QStringLiteral("🟢 ") + tr("Mining..."));
+    } else {
+        ui->startMiningButton->setText(tr("Start Mining"));
+        ui->miningStatusLabel->setText(QStringLiteral("🔴 ") + tr("Stopped"));
+    }
 
+    ui->labelHashRate->setText(QString("⚡ Hash Rate: %1").arg(g_latestHashrate));
+
+    if (clientModel) {
+        ui->labelConnections->setText(QString("🌐 Connections: %1").arg(clientModel->getNumConnections()));
+
+        // 🟧 区块高度用橙色小方块
+        ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +
+                                     QString("Block Height: %1").arg(clientModel->getNumBlocks()));
+    }
+}
+
+void OverviewPage::refreshAllMiningUi()
+{
+    for (OverviewPage* page : g_overviewPages) {
+        if (page) {
+            page->updateMiningUI();
+        }
+    }
+}
+
+void OverviewPage::updateBlockHeight(int count,
+                                     const QDateTime&,
+                                     double,
+                                     SyncType,
+                                     SynchronizationState)
+{
+    ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +
+                                 QString("Block Height: %1").arg(count));
+}

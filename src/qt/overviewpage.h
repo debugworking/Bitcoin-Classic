@@ -14,7 +14,7 @@ class PlatformStyle;
 class WalletModel;
 
 namespace Ui {
-    class OverviewPage;
+class OverviewPage;
 }
 
 QT_BEGIN_NAMESPACE
@@ -26,43 +26,52 @@ class OverviewPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit OverviewPage(const PlatformStyle *platformStyle, QWidget *parent = nullptr);
+    explicit OverviewPage(const PlatformStyle* platformStyle, QWidget* parent = nullptr);
     ~OverviewPage();
 
-    void setClientModel(ClientModel *clientModel);
-    void setWalletModel(WalletModel *walletModel);
+    void setClientModel(ClientModel* clientModel);
+    void setWalletModel(WalletModel* walletModel);
     void showOutOfSyncWarning(bool fShow);
+
+    static void refreshAllMiningUi();
 
 public Q_SLOTS:
     void setBalance(const interfaces::WalletBalances& balances);
     void setPrivacy(bool privacy);
 
 Q_SIGNALS:
-    void transactionClicked(const QModelIndex &index);
+    void transactionClicked(const QModelIndex& index);
     void outOfSyncWarningClicked();
 
 protected:
     void changeEvent(QEvent* e) override;
 
 private:
-    Ui::OverviewPage *ui;
+    Ui::OverviewPage* ui;
     ClientModel* clientModel{nullptr};
     WalletModel* walletModel{nullptr};
     bool m_privacy{false};
 
     const PlatformStyle* m_platform_style;
 
-    TxViewDelegate *txdelegate;
+    TxViewDelegate* txdelegate;
     std::unique_ptr<TransactionFilterProxy> filter;
+
+    void updateMiningUI();
 
 private Q_SLOTS:
     void LimitTransactionRows();
     void updateDisplayUnit();
-    void handleTransactionClicked(const QModelIndex &index);
-    void updateAlerts(const QString &warnings);
+    void handleTransactionClicked(const QModelIndex& index);
+    void updateAlerts(const QString& warnings);
     void updateWatchOnlyLabels(bool showWatchOnly);
     void setMonospacedFont(const QFont&);
     void updateConnections(int count);
+    void updateBlockHeight(int count,
+                           const QDateTime& blockDate,
+                           double nVerificationProgress,
+                           SyncType header,
+                           SynchronizationState sync_state);
 };
 
-#endif
+#endif // BITCOIN_QT_OVERVIEWPAGE_H
