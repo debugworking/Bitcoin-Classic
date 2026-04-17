@@ -405,9 +405,16 @@ void OverviewPage::setClientModel(ClientModel* model)
     this->clientModel = model;
 
     if (model) {
-        connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections, Qt::UniqueConnection);
-        connect(model, &ClientModel::numBlocksChanged, this, &OverviewPage::updateBlockHeight, Qt::UniqueConnection);
-        connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts, Qt::UniqueConnection);
+        connect(model, &ClientModel::numBlocksChanged,
+        this,
+        [this](int count,
+               const QDateTime& blockDate,
+               double progress,
+               SyncType syncType,
+               SynchronizationState syncState) {
+            updateBlockHeight(count, blockDate, progress, syncType, syncState);
+        },
+        Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
 
         updateConnections(model->getNumConnections());
