@@ -407,12 +407,13 @@ void OverviewPage::setClientModel(ClientModel* model)
     if (model) {
         connect(model, &ClientModel::numBlocksChanged,
         this,
-        [this](int count,
-               const QDateTime& blockDate,
-               double progress,
-               int syncType,
-               SynchronizationState syncState) {
-            updateBlockHeight(count, blockDate, progress, syncType, syncState);
+        [this]() {
+            if (!clientModel) return;
+
+            ui->labelBlockHeight->setText(
+                QStringLiteral("🟧") +
+                tr("Block Height: %1").arg(clientModel->getNumBlocks())
+            );
         },
         Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
