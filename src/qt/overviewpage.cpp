@@ -44,6 +44,45 @@ bool g_isMining = false;
 QString g_latestHashrate = "0 H/s";
 QTimer* g_hashrateTimer = nullptr;
 std::vector<OverviewPage*> g_overviewPages;
+
+static double UnitMultiplier(const QString& unit)
+{
+    const QString u = unit.trimmed().toUpper();
+
+    if (u == "T") return 1e12;
+    if (u == "G") return 1e9;
+    if (u == "M") return 1e6;
+    if (u == "K") return 1e3;
+    return 1.0;
+}
+
+static QString FormatHashrate(double hps)
+{
+    double value = hps;
+    QString unit = "H/s";
+
+    if (hps >= 1e12) {
+        value = hps / 1e12;
+        unit = "TH/s";
+    } else if (hps >= 1e9) {
+        value = hps / 1e9;
+        unit = "GH/s";
+    } else if (hps >= 1e6) {
+        value = hps / 1e6;
+        unit = "MH/s";
+    } else if (hps >= 1e3) {
+        value = hps / 1e3;
+        unit = "kH/s";
+    }
+
+    QString text = QString::number(value, 'f', 2);
+
+    while (text.contains('.') && (text.endsWith('0') || text.endsWith('.'))) {
+        text.chop(1);
+    }
+
+    return text + " " + unit;
+}
 }
 
 class TxViewDelegate : public QAbstractItemDelegate
@@ -153,9 +192,10 @@ OverviewPage::OverviewPage(const PlatformStyle* platformStyle, QWidget* parent) 
 {
     ui->setupUi(this);
 
-    ui->labelHashRate->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    ui->labelHashRate->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->labelConnections->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->labelBlockHeight->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    ui->labelBlockHeight->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->miningStatusLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->miningStatusLabel->setTextFormat(Qt::RichText);
 
     g_overviewPages.push_back(this);
@@ -179,8 +219,8 @@ OverviewPage::OverviewPage(const PlatformStyle* platformStyle, QWidget* parent) 
 
             QString program = QCoreApplication::applicationDirPath() + "/gbt_miner.exe";
 
-qDebug() << "矿工路径：" << program;
-qDebug() << "是否存在：" << QFile::exists(program);
+qDebug() << "矿工路径:" << program;
+qDebug() << "是否存在:" << QFile::exists(program);
 
             QStringList arguments;
             arguments << "--rpcport=28476"
@@ -188,34 +228,52 @@ qDebug() << "是否存在：" << QFile::exists(program);
                       << "--rpcpassword=pass"
                       << "--submit-to=127.0.0.1:28476";
 
-            QObject::connect(g_minerProcess, &QProcess::readyRead, this, [this]() {
+            QObject::connect(g_minerProcess, &QProcess::readyReadStandardOutput, this, [this]() {
                 if (!g_minerProcess) return;
 
-                const QString output = QString::fromUtf8(g_minerProcess->readAll());
+                const QString output = QString::fromUtf8(g_minerProcess->readAllStandardOutput());
                 if (output.isEmpty()) return;
 
-                QRegularExpression regex1(R"(hash(?:ing)?[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*(?:/s|H/s|KH/s|MH/s|GH/s|TH/s))",
-                                          QRegularExpression::CaseInsensitiveOption);
-                QRegularExpression regex2(R"(([0-9]+(?:\.[0-9]+)?\s*[kKmMgGtT]?\s*H/s))");
-                QRegularExpression regex3(R"(([0-9]+(?:\.[0-9]+)?\s*/s))");
+                QRegularExpression regex1(
+                    R"(hash(?:ing|rate)?[^0-9]*([0-9]+(?:\.[0-9]+)?)\s*([kKmMgGtT]?)\s*(?:H/s|/s))",
+                    QRegularExpression::CaseInsensitiveOption);
+
+                QRegularExpression regex2(
+                    R"(([0-9]+(?:\.[0-9]+)?)\s*([kKmMgGtT]?)\s*H/s)",
+                    QRegularExpression::CaseInsensitiveOption);
+
+                QRegularExpression regex3(
+                    R"(([0-9]+(?:\.[0-9]+)?)\s*([kKmMgGtT]?)\s*/s)",
+                    QRegularExpression::CaseInsensitiveOption);
 
                 QRegularExpressionMatch match = regex1.match(output);
                 if (match.hasMatch()) {
-                    g_latestHashrate = match.captured(1) + " H/s";
+                    const double value = match.captured(1).toDouble();
+                    const QString unit = match.captured(2);
+                    const double hps = value * UnitMultiplier(unit);
+            
+                    g_latestHashrate = FormatHashrate(hps);
                     OverviewPage::refreshAllMiningUi();
                     return;
-                }
+                }    
 
                 match = regex2.match(output);
                 if (match.hasMatch()) {
-                    g_latestHashrate = match.captured(1).simplified();
+                    const double value = match.captured(1).toDouble();
+                    const QString unit = match.captured(2);
+                    const double hps = value * UnitMultiplier(unit);
+                
+                    g_latestHashrate = FormatHashrate(hps);
                     OverviewPage::refreshAllMiningUi();
                     return;
                 }
-
                 match = regex3.match(output);
                 if (match.hasMatch()) {
-                    g_latestHashrate = match.captured(1).simplified();
+                    const double value = match.captured(1).toDouble();
+                    const QString unit = match.captured(2);
+                    const double hps = value * UnitMultiplier(unit);
+
+                    g_latestHashrate = FormatHashrate(hps);
                     OverviewPage::refreshAllMiningUi();
                 }
             });
@@ -260,7 +318,7 @@ qDebug() << "是否存在：" << QFile::exists(program);
                 g_hashrateTimer = nullptr;
             }
 
-            g_hashrateTimer = new QTimer();
+            g_hashrateTimer = new QTimer(this);
             QObject::connect(g_hashrateTimer, &QTimer::timeout, this, []() {
                 OverviewPage::refreshAllMiningUi();
             });
@@ -406,20 +464,22 @@ void OverviewPage::setClientModel(ClientModel* model)
 
     if (model) {
         connect(model, &ClientModel::numBlocksChanged,
-        this,
-        [this]() {
-            if (!clientModel) return;
-
-            ui->labelBlockHeight->setText(
-                QStringLiteral("🟧") +
-                tr("Block Height: %1").arg(clientModel->getNumBlocks())
-            );
-        },
-        Qt::UniqueConnection);
+                this,
+                [this]() {
+                    if (!clientModel) return;
+                    ui->labelBlockHeight->setText(
+                        QStringLiteral("🟧 ") +
+                        tr("Block Height: %1").arg(clientModel->getNumBlocks())
+                    );
+                },
+                Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
 
         updateConnections(model->getNumConnections());
-        ui->labelBlockHeight->setText(tr("Block Height: %1").arg(model->getNumBlocks()));
+        ui->labelBlockHeight->setText(
+            QStringLiteral("🟧 ") +
+            tr("Block Height: %1").arg(model->getNumBlocks())
+        );
 
         if (model->getOptionsModel()) {
             connect(model->getOptionsModel(), &OptionsModel::fontForMoneyChanged,
