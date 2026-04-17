@@ -410,7 +410,7 @@ void OverviewPage::setClientModel(ClientModel* model)
         [this](int count,
                const QDateTime& blockDate,
                double progress,
-               SyncType syncType,
+               int syncType,
                SynchronizationState syncState) {
             updateBlockHeight(count, blockDate, progress, syncType, syncState);
         },
@@ -562,7 +562,7 @@ void OverviewPage::refreshAllMiningUi()
 void OverviewPage::updateBlockHeight(int count,
                                      const QDateTime&,
                                      double,
-                                     SyncType,
+                                     int,
                                      SynchronizationState)
 {
     ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +
