@@ -1,3 +1,5 @@
+#include <QDebug>
+#include <QFile>
 #include <qt/overviewpage.h>
 #include <qt/forms/ui_overviewpage.h>
 
@@ -51,7 +53,9 @@ public:
     explicit TxViewDelegate(const PlatformStyle* _platformStyle, QObject* parent = nullptr)
         : QAbstractItemDelegate(parent), platformStyle(_platformStyle)
     {
-        connect(this, &TxViewDelegate::width_changed, this, &TxViewDelegate::sizeHintChanged);
+        connect(this, &TxViewDelegate::width_changed, this, [this](const QModelIndex& index) {
+    Q_EMIT sizeHintChanged(index);
+});
     }
 
     inline void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
@@ -184,7 +188,7 @@ qDebug() << "是否存在：" << QFile::exists(program);
                       << "--rpcpassword=pass"
                       << "--submit-to=127.0.0.1:28476";
 
-            QObject::connect(g_minerProcess, &QProcess::readyRead, this, []() {
+            QObject::connect(g_minerProcess, &QProcess::readyRead, this, [this]() {
                 if (!g_minerProcess) return;
 
                 const QString output = QString::fromUtf8(g_minerProcess->readAll());
