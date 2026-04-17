@@ -1731,13 +1731,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                 assumed_chain_bytes};
 
         if (!CheckDiskSpace(args.GetBlocksDirPath(), additional_bytes_needed)) {
-            InitWarning(strprintf(_(
-                    "Disk space for %s may not accommodate the block files. " \
-                    "Approximately %u GB of data will be stored in this directory."
-                ),
-                fs::quoted(fs::PathToString(args.GetBlocksDirPath())),
-                chainparams.AssumedBlockchainSize()
-            ));
+            InitWarning(_("This directory will store BTCC blockchain data."));
         }
     }
 

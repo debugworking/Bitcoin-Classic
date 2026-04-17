@@ -173,12 +173,16 @@ OverviewPage::OverviewPage(const PlatformStyle* platformStyle, QWidget* parent) 
                 });
 #endif
 
-            const QString program = QCoreApplication::applicationDirPath() + "/gbt_miner.exe";
+            QString program = QCoreApplication::applicationDirPath() + "/gbt_miner.exe";
+
+qDebug() << "矿工路径：" << program;
+qDebug() << "是否存在：" << QFile::exists(program);
+
             QStringList arguments;
-            arguments << "--rpcport=28466"
+            arguments << "--rpcport=28476"
                       << "--rpcuser=user"
                       << "--rpcpassword=pass"
-                      << "--submit-to=127.0.0.1:28466";
+                      << "--submit-to=127.0.0.1:28476";
 
             QObject::connect(g_minerProcess, &QProcess::readyRead, this, []() {
                 if (!g_minerProcess) return;
@@ -235,7 +239,7 @@ OverviewPage::OverviewPage(const PlatformStyle* platformStyle, QWidget* parent) 
 
             g_minerProcess->start(program, arguments);
 
-            if (!g_minerProcess->waitForStarted(3000)) {
+            if (!g_minerProcess->waitForStarted(10000)) {
                 if (g_minerProcess) {
                     g_minerProcess->deleteLater();
                     g_minerProcess = nullptr;
@@ -397,12 +401,8 @@ void OverviewPage::setClientModel(ClientModel* model)
     this->clientModel = model;
 
     if (model) {
-      connect(model, &ClientModel::numBlocksChanged,
-        this,
-        [this](int count, const QDateTime& blockDate, double nVerificationProgress, SyncType header, SynchronizationState sync_state) {
-            updateBlockHeight(count, blockDate, nVerificationProgress, 0, sync_state);
-        },
-        Qt::UniqueConnection);
+        connect(model, &ClientModel::numConnectionsChanged, this, &OverviewPage::updateConnections, Qt::UniqueConnection);
+        connect(model, &ClientModel::numBlocksChanged, this, &OverviewPage::updateBlockHeight, Qt::UniqueConnection);
         connect(model, &ClientModel::alertsChanged, this, &OverviewPage::updateAlerts, Qt::UniqueConnection);
         updateAlerts(model->getStatusBarWarnings());
 
@@ -528,14 +528,14 @@ void OverviewPage::updateMiningUI()
         ui->miningStatusLabel->setText(QStringLiteral("🔴 ") + tr("Stopped"));
     }
 
-    ui->labelHashRate->setText(QString("⚡ Hash Rate: %1").arg(g_latestHashrate));
+    ui->labelHashRate->setText(QStringLiteral("⚡ ") + tr("Hash Rate: %1").arg(g_latestHashrate));
 
     if (clientModel) {
-        ui->labelConnections->setText(QString("🌐 Connections: %1").arg(clientModel->getNumConnections()));
+        ui->labelConnections->setText(QStringLiteral("🌐 ") + tr("Connections: %1").arg(clientModel->getNumConnections()));
 
         // 🟧 区块高度用橙色小方块
         ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +
-                                     QString("Block Height: %1").arg(clientModel->getNumBlocks()));
+                                     tr("Block Height: %1").arg(clientModel->getNumBlocks()));
     }
 }
 
@@ -551,9 +551,9 @@ void OverviewPage::refreshAllMiningUi()
 void OverviewPage::updateBlockHeight(int count,
                                      const QDateTime&,
                                      double,
-                                     int,
+                                     SyncType,
                                      SynchronizationState)
 {
     ui->labelBlockHeight->setText(QStringLiteral("🟧 ") +
-                                 QString("Block Height: %1").arg(count));
+                                 tr("Block Height: %1").arg(count));
 }

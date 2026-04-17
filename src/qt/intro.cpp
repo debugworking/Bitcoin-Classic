@@ -375,10 +375,10 @@ QString Intro::getPathToCheck()
 void Intro::UpdatePruneLabels(bool prune_checked)
 {
     m_required_space_gb = m_blockchain_size_gb + m_chain_state_size_gb;
-    QString storageRequiresMsg = tr("This directory will store BTCC blockchain data.");
+    QString storageRequiresMsg = tr("At least %1 GB of data will be stored in this directory, and it will grow over time.");
     if (prune_checked && m_prune_target_gb <= m_blockchain_size_gb) {
         m_required_space_gb = m_prune_target_gb + m_chain_state_size_gb;
-        storageRequiresMsg = tr("This directory will store BTCC blockchain data.");
+        storageRequiresMsg = tr("Approximately %1 GB of data will be stored in this directory.");
     }
     ui->lblExplanation3->setVisible(prune_checked);
     ui->pruneGB->setEnabled(prune_checked);
@@ -388,6 +388,10 @@ void Intro::UpdatePruneLabels(bool prune_checked)
     ui->lblPruneSuffix->setText(
         //: Explanatory text on the capability of the current prune target.
         tr("(sufficient to restore backups %n day(s) old)", "", expected_backup_days));
-    ui->sizeWarningLabel->hide();
+    ui->sizeWarningLabel->setText(
+        tr("%1 will download and store a copy of the Bitcoin block chain.").arg(PACKAGE_NAME) + " " +
+        storageRequiresMsg.arg(m_required_space_gb) + " " +
+        tr("The wallet will also be stored in this directory.")
+    );
     this->adjustSize();
 }
