@@ -42,7 +42,7 @@ const QString BITCOIN_IPC_PREFIX("bitcoin:");
 //
 static QString ipcServerName()
 {
-    QString name("BitcoinClassicQt");
+    QString name("Bitcoin-Classic-Qt");
 
     // Append a simple hash of the datadir
     // Note that gArgs.GetDataDirNet() returns a different path
@@ -189,9 +189,9 @@ void PaymentServer::handleURIOrFile(const QString& s)
         return;
     }
 
-    if (s.startsWith("bitcoin-classic://", Qt::CaseInsensitive))
+    if (s.startsWith("bitcoin://", Qt::CaseInsensitive))
     {
-        Q_EMIT message(tr("URI handling"), tr("'bitcoin-classic://' is not a valid URI. Use 'bitcoin:' URI (Bitcoin-Classic compatible)."),
+        Q_EMIT message(tr("URI handling"), tr("'bitcoin://' is not a valid URI. Use 'bitcoin:' instead."),
             CClientUIInterface::MSG_ERROR);
     }
     else if (s.startsWith(BITCOIN_IPC_PREFIX, Qt::CaseInsensitive)) // bitcoin: URI
