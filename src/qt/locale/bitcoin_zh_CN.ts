@@ -629,8 +629,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>连接到节点...</translation>
         </message>
         <message>
-            <source>Request payments (generates QR codes and BTCC: URIs)</source>
-            <translation>请求支付（生成二维码和 BTCC URI）</translation>
+            <source>Request payments (generates QR codes and bitcoin: URI)</source>
+            <translation>请求支付（生成二维码和 bitcoin URI）</translation>
         </message>
         <message>
             <source>Show the list of used sending addresses and labels</source>
@@ -711,8 +711,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>收款地址(&amp;R)</translation>
         </message>
         <message>
-            <source>Open a BTCC: URI</source>
-            <translation>打开 BTCC: URI</translation>
+            <source>Open a bitcoin: URI</source>
+            <translation>打开 bitcoin: URI</translation>
         </message>
         <message>
             <source>Open Wallet</source>
@@ -809,7 +809,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>显示(&amp;H)</translation>
         </message>
         <message numerus="yes">
-            <source>%n active connection(s) to Bitcoin-Classic network.</source>
+            <source>%n active connection(s) to BTCC 网络.</source>
             <extracomment>A substring of the tooltip.</extracomment>
             <translation>
                 <numerusform>%n 条到BTCC 网络的活动连接</numerusform>
@@ -929,8 +929,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         
         <message>
-            <source>Request payments (generates QR codes and BTCC: URI)</source>
-            <translation>请求支付（生成二维码和 BTCC: URI）</translation>
+            <source>Request payments (generates QR codes and bitcoin: URI)</source>
+            <translation>请求支付（生成二维码和 bitcoin: URI）</translation>
         </message>
 
         </context>
@@ -1725,7 +1725,7 @@ The migration process will create a backup of the wallet before migrating. This 
             <translation>允许传入连接(&amp;G)</translation>
         </message>
         <message>
-            <source>Connect to the Bitcoin-Classic network through a SOCKS5 proxy.</source>
+            <source>Connect to the BTCC 网络 through a SOCKS5 proxy.</source>
             <translation>通过 SOCKS5 代理连接BTCC网络。</translation>
         </message>
         <message>
@@ -1805,7 +1805,7 @@ The migration process will create a backup of the wallet before migrating. This 
             <translation>是否显示手动选币功能。</translation>
         </message>
         <message>
-            <source>Connect to the Bitcoin-Classic network through a separate SOCKS5 proxy for Tor onion services.</source>
+            <source>Connect to the BTCC 网络 through a separate SOCKS5 proxy for Tor onion services.</source>
             <translation>连接BTCC网络时专门为Tor onion服务使用另一个 SOCKS5 代理。</translation>
         </message>
         <message>
@@ -1902,7 +1902,7 @@ The migration process will create a backup of the wallet before migrating. This 
             <translation>窗体</translation>
         </message>
         <message>
-            <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin-Classic network after a connection is established, but this process has not completed yet.</source>
+            <source>The displayed information may be out of date. Your wallet automatically synchronizes with the BTCC 网络 after a connection is established, but this process has not completed yet.</source>
             <translation>现在显示的消息可能是过期的。在连接上BTCC网络节点后，您的钱包将自动与网络同步，但是这个过程还没有完成。</translation>
         </message>
         <message>
@@ -2165,16 +2165,16 @@ The migration process will create a backup of the wallet before migrating. This 
             <translation>支付请求出错</translation>
         </message>
         <message>
-            <source>Cannot start bitcoin-classic: click-to-pay handler</source>
-            <translation>无法启动 bitcoin-classic: 协议的“一键支付”处理程序</translation>
+            <source>Cannot start bitcoin: click-to-pay handler</source>
+            <translation>无法启动 bitcoin: 协议的“一键支付”处理程序</translation>
         </message>
         <message>
             <source>URI handling</source>
             <translation>URI 处理</translation>
         </message>
         <message>
-            <source>'bitcoin-classic://' is not a valid URI. Use 'bitcoin-classic:' instead.</source>
-            <translation>‘bitcoin-classic://’不是合法的URI。请改用'bitcoin-classic:'。</translation>
+            <source>'bitcoin://' is not a valid URI. Use 'bitcoin:' instead.</source>
+            <translation>‘bitcoin://’不是合法的URI。请改用'bitcoin:'。</translation>
         </message>
         <message>
             <source>Cannot process payment request because BIP70 is not supported.
@@ -2781,7 +2781,7 @@ For more information on using this console, type %6.
             <translation>消息(&amp;M):</translation>
         </message>
         <message>
-            <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Bitcoin-Classic network.</source>
+            <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the BTCC 网络.</source>
             <translation>可在支付请求上备注一条信息，在打开支付请求时可以看到。注意:该消息不是通过BTCC网络传送。</translation>
         </message>
         <message>
@@ -3391,8 +3391,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>请为此地址输入一个标签以将它加入已用地址列表</translation>
         </message>
         <message>
-            <source>A message that was attached to the BTCC: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Bitcoin-Classic network.</source>
-            <translation>BTCC: URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过BTCC网络传输。</translation>
+            <source>A message that was attached to the bitcoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the BTCC 网络.</source>
+            <translation>bitcoin: URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过BTCC网络传输。</translation>
         </message>
     </context>
     <context>
@@ -5081,4 +5081,37 @@ Unable to restore backup of wallet.</source>
             <translation>区块高度：%1</translation>
         </message>
     </context>
+
+<context>
+    <name>OverviewPage</name>
+    <message>
+        <source>🟢 挖矿中...</source>
+        <translation>🟢 挖矿中...</translation>
+    </message>
+    <message>
+        <source>🔴 已停止</source>
+        <translation>🔴 已停止</translation>
+    </message>
+    <message>
+        <source>⚡ 当前算力：</source>
+        <translation>⚡ 当前算力：</translation>
+    </message>
+    <message>
+        <source>🌐 连接节点：</source>
+        <translation>🌐 连接节点：</translation>
+    </message>
+    <message>
+        <source>🟧 区块高度：</source>
+        <translation>🟧 区块高度：</translation>
+    </message>
+    <message>
+        <source>开始挖矿</source>
+        <translation>开始挖矿</translation>
+    </message>
+    <message>
+        <source>停止挖矿</source>
+        <translation>停止挖矿</translation>
+    </message>
+</context>
+
 </TS>
