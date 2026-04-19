@@ -30,7 +30,7 @@ if test -n "$PKG_CONFIG_LIBDIR"; then
 fi
 
 BITCOIN_DAEMON_NAME=bitcoind
-BITCOIN_GUI_NAME=bitcoin-classic-qt
+BITCOIN_GUI_NAME=bitcoin-qt
 BITCOIN_TEST_NAME=test_bitcoin-classic
 BITCOIN_CLI_NAME=bitcoin-classic-cli
 BITCOIN_TX_NAME=bitcoin-classic-tx
