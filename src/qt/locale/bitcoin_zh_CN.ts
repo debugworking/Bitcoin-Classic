@@ -59,11 +59,11 @@
             <translation>选择(&amp;H)</translation>
         </message>
         <message>
-            <source>These are your Bitcoin-Classic addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+            <source>These are your BTCC addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
             <translation>您可以给这些BTCC地址付款。在付款之前，务必要检查金额和收款地址是否正确。</translation>
         </message>
         <message>
-            <source>These are your Bitcoin-Classic addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+            <source>These are your BTCC addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>这是您用来收款的BTCC地址。使用“接收”标签页中的“创建新收款地址”按钮来创建新的收款地址。
 只有“旧式（legacy）”类型的地址支持签名。</translation>
@@ -328,10 +328,6 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>金额</translation>
         </message>
         <message>
-            <source>Enter a Bitcoin-Classic address (e.g. %1)</source>
-            <translation>请输入一个BTCC地址 (例如 %1)</translation>
-        </message>
-        <message>
             <source>Unroutable</source>
             <translation>不可路由</translation>
         </message>
@@ -358,17 +354,17 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <message>
             <source>Manual</source>
             <extracomment>Peer connection type established manually through one of several methods.</extracomment>
-            <translation>手册</translation>
+            <translation>手动</translation>
         </message>
         <message>
             <source>Feeler</source>
             <extracomment>Short-lived peer connection type that tests the aliveness of known addresses.</extracomment>
-            <translation>触须</translation>
+            <translation>探测</translation>
         </message>
         <message>
             <source>Address Fetch</source>
             <extracomment>Short-lived peer connection type that solicits known addresses from a peer.</extracomment>
-            <translation>地址取回</translation>
+            <translation>地址获取</translation>
         </message>
         <message>
             <source>%1 d</source>
@@ -442,11 +438,17 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <source>%1 B</source>
             <translation>%1 字节</translation>
         </message>
+
         <message>
             <source>default wallet</source>
             <translation>默认钱包</translation>
         </message>
-    </context>
+
+        <message>
+            <source>Enter a BTCC address (e.g. %1)</source>
+            <translation>请输入一个BTCC地址（例如 %1）</translation>
+        </message>
+        </context>
     <context>
         <name>BitcoinGUI</name>
         <message>
@@ -515,8 +517,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>代理服务器已&lt;b&gt;启用&lt;/b&gt;: %1</translation>
         </message>
         <message>
-            <source>Send coins to a Bitcoin-Classic address</source>
-            <translation>向一个BTCC地址发币</translation>
+            <source>Send coins to a BTCC address</source>
+            <translation>发送到一个BTCC地址</translation>
         </message>
         <message>
             <source>Backup wallet to another location</source>
@@ -559,7 +561,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>签名消息(&amp;M)</translation>
         </message>
         <message>
-            <source>Sign messages with your Bitcoin-Classic addresses to prove you own them</source>
+            <source>Sign messages with your BTCC addresses to prove you own them</source>
             <translation>用BTCC地址关联的私钥为消息签名，以证明您拥有这个BTCC地址</translation>
         </message>
         <message>
@@ -567,7 +569,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>验证消息(&amp;V)</translation>
         </message>
         <message>
-            <source>Verify messages to ensure they were signed with specified Bitcoin-Classic addresses</source>
+            <source>Verify messages to ensure they were signed with specified BTCC addresses</source>
             <translation>校验消息，确保该消息是由指定的BTCC地址所有者签名的</translation>
         </message>
         <message>
@@ -627,8 +629,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>连接到节点...</translation>
         </message>
         <message>
-            <source>Request payments (generates QR codes and bitcoin-classic: URIs)</source>
-            <translation>请求支付 (生成二维码和 bitcoin-classic: URI)</translation>
+            <source>Request payments (generates QR codes and BTCC: URIs)</source>
+            <translation>请求支付（生成二维码和 BTCC URI）</translation>
         </message>
         <message>
             <source>Show the list of used sending addresses and labels</source>
@@ -709,8 +711,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <translation>收款地址(&amp;R)</translation>
         </message>
         <message>
-            <source>Open a bitcoin-classic: URI</source>
-            <translation>打开bitcoin-classic:开头的URI</translation>
+            <source>Open a BTCC: URI</source>
+            <translation>打开 BTCC: URI</translation>
         </message>
         <message>
             <source>Open Wallet</source>
@@ -722,7 +724,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         <message>
             <source>Close wallet</source>
-            <translation>卸载钱包</translation>
+            <translation>关闭钱包</translation>
         </message>
         <message>
             <source>Restore Wallet…</source>
@@ -752,7 +754,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         <message>
             <source>&amp;Mask values</source>
-            <translation>遮住数值(&amp;M)</translation>
+            <translation>隐藏金额(&amp;M)</translation>
         </message>
         <message>
             <source>Mask the values in the Overview tab</source>
@@ -810,7 +812,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <source>%n active connection(s) to Bitcoin-Classic network.</source>
             <extracomment>A substring of the tooltip.</extracomment>
             <translation>
-                <numerusform>%n 条到BTCC网络的活动连接</numerusform>
+                <numerusform>%n 条到BTCC 网络的活动连接</numerusform>
             </translation>
         </message>
         <message>
@@ -821,7 +823,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <message>
             <source>Show Peers tab</source>
             <extracomment>A context menu item. The "Peers tab" is an element of the "Node window".</extracomment>
-            <translation>显示节点标签</translation>
+            <translation>显示节点列表</translation>
         </message>
         <message>
             <source>Disable network activity</source>
@@ -891,19 +893,19 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         <message>
             <source>Sent transaction</source>
-            <translation>送出交易</translation>
+            <translation>发送交易</translation>
         </message>
         <message>
             <source>Incoming transaction</source>
-            <translation>流入交易</translation>
+            <translation>接收交易</translation>
         </message>
         <message>
             <source>HD key generation is &lt;b&gt;enabled&lt;/b&gt;</source>
-            <translation>HD密钥生成&lt;b&gt;启用&lt;/b&gt;</translation>
+            <translation>HD 密钥生成 &lt;b&gt;已启用&lt;/b&gt;</translation>
         </message>
         <message>
             <source>HD key generation is &lt;b&gt;disabled&lt;/b&gt;</source>
-            <translation>HD密钥生成&lt;b&gt;禁用&lt;/b&gt;</translation>
+            <translation>HD 密钥生成 &lt;b&gt;已禁用&lt;/b&gt;</translation>
         </message>
         <message>
             <source>Private key &lt;b&gt;disabled&lt;/b&gt;</source>
@@ -921,7 +923,17 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <source>Original message:</source>
             <translation>原消息:</translation>
         </message>
-    </context>
+        <message>
+            <source>Send coins to a BTCC address</source>
+            <translation>发送到一个BTCC地址</translation>
+        </message>
+        
+        <message>
+            <source>Request payments (generates QR codes and BTCC: URI)</source>
+            <translation>请求支付（生成二维码和 BTCC: URI）</translation>
+        </message>
+
+        </context>
     <context>
         <name>UnitDisplayStatusBarControl</name>
         <message>
@@ -1061,7 +1073,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         <message>
             <source>Too many external signers found</source>
-            <translation>偵測到的外接簽名器過多</translation>
+            <translation>检测到的外部签名器过多</translation>
         </message>
     </context>
     <context>
@@ -1168,7 +1180,7 @@ The migration process will create a backup of the wallet before migrating. This 
         <name>WalletController</name>
         <message>
             <source>Close wallet</source>
-            <translation>卸载钱包</translation>
+            <translation>关闭钱包</translation>
         </message>
         <message>
             <source>Are you sure you wish to close the wallet &lt;i&gt;%1&lt;/i&gt;?</source>
@@ -1176,7 +1188,7 @@ The migration process will create a backup of the wallet before migrating. This 
         </message>
         <message>
             <source>Closing the wallet for too long can result in having to resync the entire chain if pruning is enabled.</source>
-            <translation>启用修剪时，如果一个钱包被卸载太久，就必须重新同步整条区块链才能再次加载它。</translation>
+            <translation>启用修剪时，如果一个钱包被关闭过长，可能需要重新同步整条区块链才能再次加载。</translation>
         </message>
         <message>
             <source>Close all wallets</source>
@@ -1219,7 +1231,7 @@ The migration process will create a backup of the wallet before migrating. This 
         </message>
         <message>
             <source>Advanced Options</source>
-            <translation>进阶设定</translation>
+            <translation>高级选项</translation>
         </message>
         <message>
             <source>Disable private keys for this wallet. Wallets with private keys disabled will have no private keys and cannot have an HD seed or imported private keys. This is ideal for watch-only wallets.</source>
@@ -1239,7 +1251,7 @@ The migration process will create a backup of the wallet before migrating. This 
         </message>
         <message>
             <source>Use an external signing device such as a hardware wallet. Configure the external signer script in wallet preferences first.</source>
-            <translation>使用像是硬件钱包这样的外部签名设备。请在钱包偏好设置中先配置号外部签名器脚本。</translation>
+            <translation>使用外部签名设备，例如硬件钱包。请先在钱包偏好设置中配置外部签名器脚本。</translation>
         </message>
         <message>
             <source>External signer</source>
@@ -1271,7 +1283,7 @@ The migration process will create a backup of the wallet before migrating. This 
         </message>
         <message>
             <source>The address associated with this address list entry. This can only be modified for sending addresses.</source>
-            <translation>跟這個地址清單關聯的地址。只有發送地址能被修改。</translation>
+            <translation>与这个地址簿条目关联的地址。只有付款地址可以修改。</translation>
         </message>
         <message>
             <source>&amp;Address</source>
@@ -1290,7 +1302,7 @@ The migration process will create a backup of the wallet before migrating. This 
             <translation>编辑付款地址</translation>
         </message>
         <message>
-            <source>The entered address "%1" is not a valid Bitcoin-Classic address.</source>
+            <source>The entered address "%1" is not a valid BTCC address.</source>
             <translation>输入的地址 %1 并不是有效的BTCC地址。</translation>
         </message>
         <message>
@@ -1520,16 +1532,20 @@ The migration process will create a backup of the wallet before migrating. This 
     </context>
     <context>
         <name>OpenURIDialog</name>
+
         <message>
             <source>Open bitcoin URI</source>
-            <translation>打开BTCCURI</translation>
+            <translation>打开 bitcoin URI</translation>
         </message>
+
         <message>
             <source>Paste address from clipboard</source>
             <extracomment>Tooltip text for button that allows you to paste an address that is in your clipboard.</extracomment>
             <translation>从剪贴板粘贴地址</translation>
         </message>
+
     </context>
+
     <context>
         <name>OptionsDialog</name>
         <message>
@@ -2169,7 +2185,7 @@ If you are receiving this error you should request the merchant provide a BIP21 
 如果您看到了这个错误，您应该要求商家提供兼容BIP21的URI。</translation>
         </message>
         <message>
-            <source>URI cannot be parsed! This can be caused by an invalid Bitcoin-Classic address or malformed URI parameters.</source>
+            <source>URI cannot be parsed! This can be caused by an invalid BTCC address or malformed URI parameters.</source>
             <translation>无法解析 URI 地址！可能是因为BTCC地址无效，或是 URI 参数格式错误。</translation>
         </message>
         <message>
@@ -3087,7 +3103,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         </message>
         <message>
             <source>With Replace-By-Fee (BIP-125) you can increase a transaction's fee after it is sent. Without this, a higher fee may be recommended to compensate for increased transaction delay risk.</source>
-            <translation>手续费追加（Replace-By-Fee，BIP-125）可以让你在送出交易后继续追加手续费。不用这个功能的话，建议付比较高的手续费来降低交易延迟的风险。</translation>
+            <translation>手续费追加（Replace-By-Fee，BIP-125）可以让你在发送交易后继续追加手续费。不用这个功能的话，建议付比较高的手续费来降低交易延迟的风险。</translation>
         </message>
         <message>
             <source>Clear &amp;All</source>
@@ -3300,7 +3316,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             </translation>
         </message>
         <message>
-            <source>Warning: Invalid Bitcoin-Classic address</source>
+            <source>Warning: Invalid BTCC address</source>
             <translation>警告: BTCC地址无效</translation>
         </message>
         <message>
@@ -3339,7 +3355,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>选择以前用过的地址</translation>
         </message>
         <message>
-            <source>The Bitcoin-Classic address to send the payment to</source>
+            <source>The BTCC address to send the payment to</source>
             <translation>付款目的地址</translation>
         </message>
         <message>
@@ -3375,8 +3391,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>请为此地址输入一个标签以将它加入已用地址列表</translation>
         </message>
         <message>
-            <source>A message that was attached to the bitcoin-classic: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Bitcoin-Classic network.</source>
-            <translation>bitcoin-classic: URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过BTCC网络传输。</translation>
+            <source>A message that was attached to the BTCC: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Bitcoin-Classic network.</source>
+            <translation>BTCC: URI 附带的备注信息，将会和交易一起存储，备查。 注意：该消息不会通过BTCC网络传输。</translation>
         </message>
     </context>
     <context>
@@ -3401,7 +3417,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>消息签名(&amp;S)</translation>
         </message>
         <message>
-            <source>The Bitcoin-Classic address to sign the message with</source>
+            <source>The BTCC address to sign the message with</source>
             <translation>用来对消息签名的地址</translation>
         </message>
         <message>
@@ -3425,7 +3441,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>复制当前签名至剪贴板</translation>
         </message>
         <message>
-            <source>Sign the message to prove you own this Bitcoin-Classic address</source>
+            <source>Sign the message to prove you own this BTCC address</source>
             <translation>签名消息，以证明这个地址属于您</translation>
         </message>
         <message>
@@ -3449,7 +3465,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>请在下面输入接收者地址、消息（确保换行符、空格符、制表符等完全相同）和签名以验证消息。请仔细核对签名信息，以提防中间人攻击。请注意，这只是证明接收方可以用这个地址签名，它不能证明任何交易的发送人身份！</translation>
         </message>
         <message>
-            <source>The Bitcoin-Classic address the message was signed with</source>
+            <source>The BTCC address the message was signed with</source>
             <translation>用来签名消息的地址</translation>
         </message>
         <message>
@@ -3461,7 +3477,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
             <translation>对消息进行签署得到的签名数据</translation>
         </message>
         <message>
-            <source>Verify the message to ensure it was signed with the specified Bitcoin-Classic address</source>
+            <source>Verify the message to ensure it was signed with the specified BTCC address</source>
             <translation>验证消息，确保消息是由指定的BTCC地址签名过的。</translation>
         </message>
         <message>
