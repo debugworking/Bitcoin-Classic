@@ -173,17 +173,14 @@ OptionsDialog::OptionsDialog(QWidget* parent, bool enableWallet)
 
         if (!allowed_langs.contains(lang)) continue;
 
-        QLocale locale(lang);
         QString lang_label;
 
         if (lang == "en") {
-            lang_label = QStringLiteral("English (en)");
+            lang_label = QStringLiteral("English");
         } else if (lang == "zh_CN") {
-            lang_label = QStringLiteral("简体中文 (zh_CN)");
-        } else if (lang.contains('_')) {
-            lang_label = locale.nativeLanguageName() + QStringLiteral(" - ") + locale.nativeTerritoryName() + QStringLiteral(" (") + lang + QStringLiteral(")");
+            lang_label = QStringLiteral("简体中文");
         } else {
-            lang_label = locale.nativeLanguageName() + QStringLiteral(" (") + lang + QStringLiteral(")");
+            continue;
         }
 
         ui->lang->addItem(lang_label, QVariant(lang));
