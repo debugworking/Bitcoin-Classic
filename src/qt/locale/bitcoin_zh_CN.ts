@@ -591,8 +591,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </message>
         <message>
             <location line="-879" />
-            <source>Request payments (generates QR codes and BTCC: URIs)</source>
-            <translation>请求支付 (生成二维码和 BTCC: URI)</translation>
+            <source>Request payments (generates QR codes and btcc: URIs)</source>
+            <translation>请求支付 (生成二维码和 btcc: URI)</translation>
         </message>
         <message>
             <location line="+65" />
@@ -2269,28 +2269,28 @@ The migration process will create a backup of the wallet before migrating. This 
         <!-- 状态 -->
         <message>
             <source>Stopped</source>
-            <translation>🔴 已停止</translation>
+            <translation>已停止</translation>
         </message>
 
         <message>
             <source>Mining...</source>
-            <translation>🟢 挖矿中...</translation>
+            <translation>挖矿中...</translation>
         </message>
 
         <!-- 指标 -->
         <message>
             <source>Hash Rate: %1</source>
-            <translation>⚡ 当前算力：%1</translation>
+            <translation>当前算力：%1</translation>
         </message>
 
         <message>
             <source>Connections: %1</source>
-            <translation>🌐 连接节点：%1</translation>
+            <translation>连接节点：%1</translation>
         </message>
 
         <message>
             <source>Block Height: %1</source>
-            <translation>🟧 区块高度：%1</translation>
+            <translation>区块高度：%1</translation>
         </message>
 
     </context>

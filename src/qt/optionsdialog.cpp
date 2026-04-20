@@ -163,21 +163,30 @@ OptionsDialog::OptionsDialog(QWidget* parent, bool enableWallet)
 
     ui->lang->setToolTip(ui->lang->toolTip().arg(PACKAGE_NAME));
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
-    for (const QString &langStr : translations.entryList())
-    {
-        QLocale locale(langStr);
 
-        /** check if the locale name consists of 2 parts (language_country) */
-        if(langStr.contains("_"))
-        {
-            /** display language strings as "native language - native country (locale name)", e.g. "Deutsch - Deutschland (de)" */
-            ui->lang->addItem(locale.nativeLanguageName() + QString(" - ") + locale.nativeCountryName() + QString(" (") + langStr + QString(")"), QVariant(langStr));
+    const QStringList allowed_langs{"en", "zh_CN"};
+
+    for (const QString& lang_str : translations.entryList()) {
+        QString lang{lang_str};
+        lang.remove("bitcoin_");
+        lang.remove(".qm");
+
+        if (!allowed_langs.contains(lang)) continue;
+
+        QLocale locale(lang);
+        QString lang_label;
+
+        if (lang == "en") {
+            lang_label = QStringLiteral("English (en)");
+        } else if (lang == "zh_CN") {
+            lang_label = QStringLiteral("简体中文 (zh_CN)");
+        } else if (lang.contains('_')) {
+            lang_label = locale.nativeLanguageName() + QStringLiteral(" - ") + locale.nativeTerritoryName() + QStringLiteral(" (") + lang + QStringLiteral(")");
+        } else {
+            lang_label = locale.nativeLanguageName() + QStringLiteral(" (") + lang + QStringLiteral(")");
         }
-        else
-        {
-            /** display language strings as "native language (locale name)", e.g. "Deutsch (de)" */
-            ui->lang->addItem(locale.nativeLanguageName() + QString(" (") + langStr + QString(")"), QVariant(langStr));
-        }
+
+        ui->lang->addItem(lang_label, QVariant(lang));
     }
     ui->unit->setModel(new BitcoinUnits(this));
 

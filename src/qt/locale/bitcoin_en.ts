@@ -591,8 +591,8 @@ Signing is only possible with addresses of the type 'legacy'.</translation>
         </message>
         <message>
             <location line="-879" />
-            <source>Request payments (generates QR codes and BTCC: URIs)</source>
-            <translation>Request payments (generates QR codes and BTCC: URIs)</translation>
+            <source>Request payments (generates QR codes and btcc: URIs)</source>
+            <translation>Request payments (generates QR codes and btcc: URIs)</translation>
         </message>
         <message>
             <location line="+65" />
