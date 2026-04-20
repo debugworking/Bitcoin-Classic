@@ -31,10 +31,10 @@ fi
 
 BITCOIN_DAEMON_NAME=bitcoind
 BITCOIN_GUI_NAME=bitcoin-qt
-BITCOIN_TEST_NAME=test_bitcoin-classic
-BITCOIN_CLI_NAME=bitcoin-classic-cli
-BITCOIN_TX_NAME=bitcoin-classic-tx
-BITCOIN_UTIL_NAME=bitcoin-classic-util
+BITCOIN_TEST_NAME=test_bitcoin
+BITCOIN_CLI_NAME=bitcoin-cli
+BITCOIN_TX_NAME=bitcoin-tx
+BITCOIN_UTIL_NAME=bitcoin-util
 BITCOIN_CHAINSTATE_NAME=bitcoin-classic-chainstate
 BITCOIN_WALLET_TOOL_NAME=bitcoin-classic-wallet
 dnl Multi Process
