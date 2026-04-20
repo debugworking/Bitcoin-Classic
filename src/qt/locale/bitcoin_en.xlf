@@ -510,7 +510,7 @@ Signing is only possible with addresses of the type &apos;legacy&apos;.</source>
         <context-group purpose="location"><context context-type="linenumber">1146</context></context-group>
       </trans-unit>
       <trans-unit id="_msg116">
-        <source xml:space="preserve">Request payments (generates QR codes and btcc: URIs)</source>
+        <source xml:space="preserve">Request payments (generates QR codes and bitcoin: URIs)</source>
         <context-group purpose="location"><context context-type="linenumber">267</context></context-group>
       </trans-unit>
       <trans-unit id="_msg117">
@@ -599,7 +599,7 @@ Signing is only possible with addresses of the type &apos;legacy&apos;.</source>
         <context-group purpose="location"><context context-type="linenumber">333</context></context-group>
       </trans-unit>
       <trans-unit id="_msg137">
-        <source xml:space="preserve">Open a btcc: URI</source>
+        <source xml:space="preserve">Open a bitcoin: URI</source>
         <context-group purpose="location"><context context-type="linenumber">337</context></context-group>
       </trans-unit>
       <trans-unit id="_msg138">
@@ -2145,7 +2145,7 @@ The migration process will create a backup of the wallet before migrating. This 
         <context-group purpose="location"><context context-type="linenumber">145</context></context-group>
       </trans-unit>
       <trans-unit id="_msg475">
-        <source xml:space="preserve">Cannot start btcc: click-to-pay handler</source>
+        <source xml:space="preserve">Cannot start bitcoin: click-to-pay handler</source>
         <context-group purpose="location"><context context-type="linenumber">146</context></context-group>
       </trans-unit>
       <trans-unit id="_msg476">
