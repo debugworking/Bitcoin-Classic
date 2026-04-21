@@ -1660,7 +1660,7 @@ The migration process will create a backup of the wallet before migrating. This 
         <message>
             <location filename="../forms/openuridialog.ui" line="+14" />
             <source>Open BTCC URI</source>
-            <translation>打开BTCCURI</translation>
+            <translation>打开BTCC URI</translation>
         </message>
         <message>
             <location line="+8" />
