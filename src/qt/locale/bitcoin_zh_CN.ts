@@ -834,8 +834,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <source>%n active connection(s) to BTCC network.</source>
             <extracomment>A substring of the tooltip.</extracomment>
             <translation>
-                <numerusform>%n 条到BTCC网络的活动连接</numerusform>
-                <numerusform>%n 条到BTCC网络的活动连接</numerusform>
+                <numerusform>%n 已连接到BTCC网络的节点数</numerusform>
             </translation>
         </message>
         <message>
