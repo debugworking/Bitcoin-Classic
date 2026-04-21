@@ -373,6 +373,12 @@ Signing is only possible with addresses of the type 'legacy'.</source>
             <source>&amp;Overview</source>
             <translation>概况(&amp;O)</translation>
         </message>
+
+        <message>
+            <source>Bitcoin-Classic Core</source>
+            <translation>比特币怀旧版</translation>
+        </message>
+       
         <message>
             <location line="+1" />
             <source>Show general overview of wallet</source>
