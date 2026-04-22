@@ -96,7 +96,7 @@ public:
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = 0;
-        consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
+        consensus.powLimit = uint256{"0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -132,19 +132,19 @@ public:
         m_assumed_blockchain_size = 620;
         m_assumed_chain_state_size = 14;
 
-        const char* main_genesis_msg = "10/Apr/2026 The Beginning of a New Era";
+        const char* main_genesis_msg = "22/Apr/2026 This is a new beginning";
         const CScript main_genesis_script = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
         genesis = CreateGenesisBlock(main_genesis_msg,
                 main_genesis_script,
-                1775791836,
-                6,
-                0x207fffff,
+                1776837806,
+                5,
+                0x200fffff,
                 1,
                 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256{"3cf1cfcb3b0bf5e4a883fb54026d1a4b5c5445804c9f06f3a00830611c734730"});
-        assert(genesis.hashMerkleRoot == uint256{"ce319f3e369c1174b9cd1f453c6b0eefe9b44d5b48318e51f677d9522aa49e8a"});
+        assert(consensus.hashGenesisBlock == uint256{"049d72ca3263f2e347721fb85505fbfd5ea5dce56e43e7b11720e4f411103718"});
+        assert(genesis.hashMerkleRoot == uint256{"b0dec8b993a7b4180ebd0132c04370631e8690560b3365f0c37e0b86c2bf3641"});
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -162,6 +162,9 @@ public:
         vSeeds.emplace_back("seed.mainnet.achownodes.xyz."); // Ava Chow, only supports x1, x5, x9, x49, x809, x849, xd, x400, x404, x408, x448, xc08, xc48, x40c
 
         vSeeds.clear();
+        vSeeds.emplace_back("seed1.bitcoin-classic.net");
+        vSeeds.emplace_back("seed1.btc-classic.org");
+
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,28);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,40);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,188);
@@ -170,7 +173,7 @@ public:
 
         bech32_hrp = "cc";
 
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
+        // vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
         vFixedSeeds.clear();
 
         fDefaultConsistencyChecks = false;
@@ -178,7 +181,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256{"3cf1cfcb3b0bf5e4a883fb54026d1a4b5c5445804c9f06f3a00830611c734730"}},
+                {0, uint256{"049d72ca3263f2e347721fb85505fbfd5ea5dce56e43e7b11720e4f411103718"}},
                 }
         };
 
