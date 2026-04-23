@@ -1731,7 +1731,7 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
                 assumed_chain_bytes};
 
         if (!CheckDiskSpace(args.GetBlocksDirPath(), additional_bytes_needed)) {
-            InitWarning(_("This directory will store BTCC blockchain data."));
+    // InitWarning(_("This directory will store BTCC blockchain data."));
         }
     }
 
