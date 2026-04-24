@@ -428,7 +428,7 @@ void RestoreWalletActivity::finish()
         QMessageBox::critical(m_parent_widget, tr("Restore wallet failed"), QString::fromStdString(m_error_message.translated));
     } else if (!m_warning_message.empty()) {
         //: Title of message box which is displayed when the wallet is restored with some warning.
-        QMessageBox::warning(m_parent_widget, tr("Restore wallet warning"), QString::fromStdString(Join(m_warning_message, "\n").translated));
+        QMessageBox::warning(m_parent_widget, tr("Restore wallet warning"), QString::fromStdString(Join(m_warning_message, Untranslated("\n")).translated));
     } else {
         //: Title of message box which is displayed when the wallet is successfully restored.
         QMessageBox::information(m_parent_widget, tr("Restore wallet message"), tr("Wallet restored successfully"));
