@@ -6730,4 +6730,13 @@ Unable to restore backup of wallet.</source>
             <translation>无法写入设置文件</translation>
         </message>
     </context>
+    <context>
+    <name>RestoreWalletActivity</name>
+
+    <message>
+        <source>Wallet restored successfully</source>
+        <translation>钱包已成功恢复</translation>
+    </message>
+
+</context>
 </TS>
