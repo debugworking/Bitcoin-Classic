@@ -164,6 +164,11 @@ public:
         vSeeds.clear();
         vSeeds.emplace_back("seed1.bitcoin-classic.net");
         vSeeds.emplace_back("seed1.btc-classic.org");
+        vSeeds.emplace_back("seed2.bitcoin-classic.net");
+        vSeeds.emplace_back("seed2.btc-classic.org");
+        vSeeds.emplace_back("seed3.bitcoin-classic.net");
+        vSeeds.emplace_back("seed3.btc-classic.org");
+
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,28);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,40);
