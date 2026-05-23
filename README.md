@@ -1,78 +1,128 @@
-Bitcoin Core integration/staging tree
-=====================================
 
-https://bitcoincore.org
+---
 
-For an immediately usable, binary version of the Bitcoin Core software, see
-https://bitcoincore.org/en/download/.
 
-What is Bitcoin Core?
----------------------
 
-Bitcoin Core connects to the Bitcoin peer-to-peer network to download and fully
-validate blocks and transactions. It also includes a wallet and graphical user
-interface, which can be optionally built.
+<p align="right">
+  <a href="README.md">
+    <img src="https://img.shields.io/badge/English-blue?style=for-the-badge">
+  </a>
+  <a href="README_CN.md">
+    <img src="https://img.shields.io/badge/中文-red?style=for-the-badge">
+  </a>
+</p>
+<p align="center">
+  <img src="assets/Bitcoin-Classic-en.png" width="800"/>
+</p> 
 
-Further information about Bitcoin Core is available in the [doc folder](/doc).
 
-License
--------
+## Project Vision
 
-Bitcoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
-information or see https://opensource.org/licenses/MIT.
+Today, almost everyone has heard of Bitcoin, 
+but very few people have actually obtained Bitcoin through mining.
 
-Development Process
--------------------
+Bitcoin-Classic aims to restore this original experience, 
+allowing everyone to participate in mining and enjoy the fun and sense of achievement it brings.
 
-The `master` branch is regularly built (see `doc/build-*.md` for instructions) and tested, but it is not guaranteed to be
-completely stable. [Tags](https://github.com/bitcoin/bitcoin/tags) are created
-regularly from release branches to indicate new official, stable release versions of Bitcoin Core.
+This is not just a blockchain, but an attempt to return to the essence of Bitcoin.
 
-The https://github.com/bitcoin-core/gui repository is used exclusively for the
-development of the GUI. Its master branch is identical in all monotree
-repositories. Release branches and tags do not exist, so please do not fork
-that repository unless it is for development reasons.
+---
 
-The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
-and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
+## Project Overview
 
-Testing
--------
+**Bitcoin-Classic (BTCC)** is a decentralized digital currency rebuilt based on Bitcoin Core v28.1.
 
-Testing and code review is the bottleneck for development; we get more pull
-requests than we can review and test on short notice. Please be patient and help out by testing
-other people's pull requests, and remember this is a security-critical project where any mistake might cost people
-lots of money.
+---
 
-### Automated Testing
+## Project Goals
 
-Developers are strongly encouraged to write [unit tests](src/test/README.md) for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run
-(assuming they weren't disabled in configure) with: `make check`. Further details on running
-and extending unit tests can be found in [/src/test/README.md](/src/test/README.md).
+- Allow ordinary users to participate in mining  
+- Lower the barrier to entry (CPU mining supported)  
+- Recreate the “early Bitcoin” experience  
+- Provide a lightweight and intuitive graphical interface  
 
-There are also [regression and integration tests](/test), written
-in Python.
-These tests can be run (if the [test dependencies](/test) are installed) with: `test/functional/test_runner.py`
+---
 
-The CI (Continuous Integration) systems make sure that every pull request is built for Windows, Linux, and macOS,
-and that unit/sanity tests are run automatically.
+## Consensus Mechanism
 
-### Manual Quality Assurance (QA) Testing
+| Item | Description |
+|------|------------|
+| Consensus Algorithm | SHA-256 Proof-of-Work (PoW) |
+| Algorithm Origin | Same as SHA-256 |
+| Mining Method | CPU / GPU (low difficulty friendly) |
+| Security Model | Longest chain rule |
 
-Changes should be tested by somebody other than the developer who wrote the
-code. This is especially important for large or high-risk changes. It is useful
-to add a test plan to the pull request description if testing the changes is
-not straightforward.
+---
 
-Translations
-------------
+## Block & Time Parameters
 
-Changes to translations as well as new translations can be submitted to
-[Bitcoin Core's Transifex page](https://www.transifex.com/bitcoin/bitcoin/).
+| Parameter | Value |
+|----------|------|
+| Block Time | 10 minutes / block |
+| Difficulty Adjustment | 2016 blocks |
+| Adjustment Period | ~14 days |
+| Target Mechanism | Maintain stable block generation |
 
-Translations are periodically pulled from Transifex and merged into the git repository. See the
-[translation process](doc/translation_process.md) for details on how this works.
+---
 
-**Important**: We do not accept translation changes as GitHub pull requests because the next
-pull from Transifex would automatically overwrite them again.
+## Core Features
+
+- Decentralization  
+- Tamper resistance  
+- Trustless system  
+
+| Item | Value |
+|------|------|
+| Total Supply | 21,000,000 BTCC |
+| Smallest Unit | 0.00000001 (1 BTCC = 100,000,000 units) |
+| Initial Block Reward | 50 BTCC / block |
+| Issuance Method | Mining |
+
+---
+
+## Halving Mechanism
+
+| Parameter | Value |
+|----------|------|
+| Halving Interval | 210,000 blocks |
+| Halving Period | ~4 years |
+| Reward Schedule | 50 → 25 → 12.5 → ... |
+
+---
+
+## Example
+
+| Block Height | Block Reward |
+|-------------|-------------|
+| 0 ~ 209,999 | 50 BTCC |
+| 210,000 | 25 BTCC |
+| 420,000 | 12.5 BTCC |
+
+---
+
+## Built-in Miner
+  
+- No additional configuration required  
+
+
+- Click here to download Bitcoin Classic:  [Bitcoin-Classic-Setup.exe](https://github.com/Marcus-Vane/Bitcoin-Classic/releases/download/v1.0.0/Bitcoin-Classic-Setup.exe) Note: All source code is fully open source and publicly available for inspection.
+
+
+- BTCC Blockchain Explorer：https://explorer.bitcoin-classic.net/
+
+- Instructions
+
+Download Bitcoin-Classic-Setup.exe and install it directly (it is recommended to install it on drive D or E). 
+After installation, a desktop shortcut will be created. Double-click to run it.
+When the program is launched for the first time, it will synchronize blockchain data. A
+fter synchronization is complete, click “Create a new wallet”, then click “Start Mining”. 
+After mining starts, a miner wallet will be created automatically. In the upper-right corner of the program, s
+witch to the miner wallet to view the BTCC obtained from mining.
+
+- Note: Please back up and properly keep your wallet at all times (the backup file is xxx.dat). 
+Do not disclose your .dat file online or send it to anyone. 
+The .dat file is equivalent to your private key and is the only proof of ownership of your wallet assets.
+
+---
+
+This is a new beginning.
