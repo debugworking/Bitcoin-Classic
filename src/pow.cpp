@@ -6,17 +6,81 @@
 #include <pow.h>
 
 #include <arith_uint256.h>
+#include <cassert>
 #include <chain.h>
 #include <primitives/block.h>
 #include <uint256.h>
+
+static bool IsBTCCAsertEnabled(const Consensus::Params& params, int64_t height)
+{
+    return params.BTCCAsertHeight > 0 && height >= params.BTCCAsertHeight && params.BTCCAsertHalfLife > 0;
+}
+
+static const CBlockIndex* GetBTCCAsertAnchor(const CBlockIndex* pindexLast, const Consensus::Params& params)
+{
+    const int anchor_height = params.BTCCAsertHeight - 1;
+    if (anchor_height < 0 || pindexLast->nHeight < anchor_height) return nullptr;
+    return pindexLast->GetAncestor(anchor_height);
+}
+
+static unsigned int CalculateBTCCAsertWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params)
+{
+    assert(pindexLast != nullptr);
+    assert(pblock != nullptr);
+
+    const CBlockIndex* anchor = GetBTCCAsertAnchor(pindexLast, params);
+    if (anchor == nullptr) return pindexLast->nBits;
+
+    const int next_height = pindexLast->nHeight + 1;
+    const int64_t height_diff = next_height - anchor->nHeight;
+    const int64_t time_diff = pblock->GetBlockTime() - anchor->GetBlockTime();
+    const int64_t ideal_time_diff = height_diff * params.nPowTargetSpacing;
+
+    arith_uint256 next_target;
+    next_target.SetCompact(anchor->nBits);
+
+    // ASERT: target = anchor_target * 2^((time_diff - ideal_time_diff) / half_life)
+    // BCH-style fixed-point integer approximation of 2^x with 16 fractional bits.
+    static constexpr int64_t RADIX = 65536;
+    const int64_t exponent = ((time_diff - ideal_time_diff) * RADIX) / params.BTCCAsertHalfLife;
+    const int64_t shifts = exponent >> 16;
+    const uint64_t frac = static_cast<uint64_t>(exponent - (shifts * RADIX));
+
+    const uint64_t factor = RADIX + ((195766423245049ULL * frac + 971821376ULL * frac * frac + 5127ULL * frac * frac * frac + (1ULL << 47)) >> 48);
+    next_target *= static_cast<uint32_t>(factor);
+
+    if (shifts <= -256) {
+        next_target = 1;
+    } else if (shifts < 0) {
+        next_target >>= static_cast<unsigned int>(-shifts);
+    } else if (shifts >= 256) {
+        next_target = UintToArith256(params.powLimit);
+    } else {
+        next_target <<= static_cast<unsigned int>(shifts);
+    }
+
+    next_target >>= 16;
+
+    if (next_target == 0) next_target = 1;
+
+    const arith_uint256 pow_limit = UintToArith256(params.powLimit);
+    if (next_target > pow_limit) next_target = pow_limit;
+
+    return next_target.GetCompact();
+}
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
+    const int next_height = pindexLast->nHeight + 1;
+    if (IsBTCCAsertEnabled(params, next_height)) {
+        return CalculateBTCCAsertWorkRequired(pindexLast, pblock, params);
+    }
+
     // Only change once per difficulty adjustment interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    if (next_height % params.DifficultyAdjustmentInterval() != 0)
     {
         if (params.fPowAllowMinDifficultyBlocks)
         {
@@ -88,6 +152,8 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
 bool PermittedDifficultyTransition(const Consensus::Params& params, int64_t height, uint32_t old_nbits, uint32_t new_nbits)
 {
     if (params.fPowAllowMinDifficultyBlocks) return true;
+
+    if (IsBTCCAsertEnabled(params, height)) return true;
 
     if (height % params.DifficultyAdjustmentInterval() == 0) {
         int64_t smallest_timespan = params.nPowTargetTimespan/4;
