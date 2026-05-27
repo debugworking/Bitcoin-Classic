@@ -80,6 +80,100 @@ BOOST_AUTO_TEST_CASE(get_next_work_upper_limit_actual)
     BOOST_CHECK(!PermittedDifficultyTransition(chainParams->GetConsensus(), pindexLast.nHeight+1, pindexLast.nBits, invalid_nbits));
 }
 
+BOOST_AUTO_TEST_CASE(btcc_legacy_asert_remains_compatible)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const auto consensus = chainParams->GetConsensus();
+    BOOST_CHECK_EQUAL(consensus.BTCCLegacyAsertHeight - 1, 46934);
+    BOOST_CHECK_EQUAL(consensus.BTCCAsertHeight - 1, 47799);
+
+    const int legacy_anchor_height = consensus.BTCCLegacyAsertHeight - 1;
+    std::vector<CBlockIndex> blocks(consensus.BTCCLegacyAsertHeight);
+
+    arith_uint256 anchor_target = UintToArith256(consensus.powLimit);
+    anchor_target >>= 32;
+    const uint32_t anchor_bits = anchor_target.GetCompact();
+    const uint32_t anchor_time = 1'000'000'000;
+
+    for (int height = 0; height <= legacy_anchor_height; ++height) {
+        blocks[height].pprev = height > 0 ? &blocks[height - 1] : nullptr;
+        blocks[height].nHeight = height;
+        blocks[height].nTime = anchor_time;
+        blocks[height].nBits = anchor_bits;
+    }
+
+    CBlockHeader candidate_fast;
+    candidate_fast.nTime = anchor_time + consensus.nPowTargetSpacing;
+    CBlockHeader candidate_slow;
+    candidate_slow.nTime = anchor_time + 30 * consensus.nPowTargetSpacing;
+
+    const uint32_t fast_bits =
+        GetNextWorkRequired(&blocks[legacy_anchor_height], &candidate_fast, consensus);
+    const uint32_t slow_bits =
+        GetNextWorkRequired(&blocks[legacy_anchor_height], &candidate_slow, consensus);
+    BOOST_CHECK_EQUAL(fast_bits, anchor_bits);
+    BOOST_CHECK_NE(slow_bits, anchor_bits);
+    BOOST_CHECK(PermittedDifficultyTransition(
+        consensus, consensus.BTCCLegacyAsertHeight, anchor_bits, slow_bits));
+}
+
+BOOST_AUTO_TEST_CASE(btcc_asert_uses_evaluation_block)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const auto consensus = chainParams->GetConsensus();
+    BOOST_CHECK_EQUAL(consensus.BTCCAsertHeight - 1, 47799);
+
+    const int anchor_height = consensus.BTCCAsertHeight - 1;
+    std::vector<CBlockIndex> blocks(consensus.BTCCAsertHeight);
+
+    arith_uint256 anchor_target = UintToArith256(consensus.powLimit);
+    anchor_target >>= 8;
+    const uint32_t anchor_bits = anchor_target.GetCompact();
+    const uint32_t anchor_parent_time = 1'000'000'000;
+
+    for (int height = 0; height <= anchor_height; ++height) {
+        blocks[height].pprev = height > 0 ? &blocks[height - 1] : nullptr;
+        blocks[height].nHeight = height;
+        blocks[height].nTime = anchor_parent_time;
+        blocks[height].nBits = anchor_bits;
+    }
+    blocks[anchor_height - 1].nTime = anchor_parent_time;
+    blocks[anchor_height].nTime = anchor_parent_time + consensus.nPowTargetSpacing;
+
+    CBlockHeader candidate_fast;
+    candidate_fast.nTime = blocks[anchor_height].nTime + 1;
+    CBlockHeader candidate_slow;
+    candidate_slow.nTime = blocks[anchor_height].nTime + 30 * consensus.nPowTargetSpacing;
+
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&blocks[anchor_height], &candidate_fast, consensus), anchor_bits);
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&blocks[anchor_height], &candidate_slow, consensus), anchor_bits);
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&blocks[anchor_height], nullptr, consensus), anchor_bits);
+}
+
+BOOST_AUTO_TEST_CASE(btcc_asert_caps_positive_overflow)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const auto consensus = chainParams->GetConsensus();
+
+    const int anchor_height = consensus.BTCCAsertHeight - 1;
+    std::vector<CBlockIndex> blocks(consensus.BTCCAsertHeight);
+
+    const uint32_t pow_limit_bits = UintToArith256(consensus.powLimit).GetCompact();
+    const uint32_t anchor_parent_time = 1'000'000'000;
+
+    for (int height = 0; height <= anchor_height; ++height) {
+        blocks[height].pprev = height > 0 ? &blocks[height - 1] : nullptr;
+        blocks[height].nHeight = height;
+        blocks[height].nTime = anchor_parent_time;
+        blocks[height].nBits = pow_limit_bits;
+    }
+    blocks[anchor_height - 1].nTime = anchor_parent_time;
+    blocks[anchor_height].nTime = anchor_parent_time + consensus.nPowTargetSpacing +
+                                  20 * consensus.BTCCAsertHalfLife;
+
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&blocks[anchor_height], nullptr, consensus), pow_limit_bits);
+}
+
 BOOST_AUTO_TEST_CASE(CheckProofOfWork_test_negative_target)
 {
     const auto consensus = CreateChainParams(*m_node.args, ChainType::MAIN)->GetConsensus();

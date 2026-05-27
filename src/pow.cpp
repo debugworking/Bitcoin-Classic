@@ -8,27 +8,138 @@
 #include <arith_uint256.h>
 #include <cassert>
 #include <chain.h>
+#include <crypto/common.h>
 #include <primitives/block.h>
 #include <uint256.h>
+
+#include <array>
 
 static bool IsBTCCAsertEnabled(const Consensus::Params& params, int64_t height)
 {
     return params.BTCCAsertHeight > 0 && height >= params.BTCCAsertHeight && params.BTCCAsertHalfLife > 0;
 }
 
-static const CBlockIndex* GetBTCCAsertAnchor(const CBlockIndex* pindexLast, const Consensus::Params& params)
+static bool IsBTCCLegacyAsertEnabled(const Consensus::Params& params, int64_t height)
 {
-    const int anchor_height = params.BTCCAsertHeight - 1;
+    return params.BTCCLegacyAsertHeight > 0 &&
+           params.BTCCAsertHeight > params.BTCCLegacyAsertHeight &&
+           height >= params.BTCCLegacyAsertHeight &&
+           height < params.BTCCAsertHeight &&
+           params.BTCCAsertHalfLife > 0;
+}
+
+static bool IsAnyBTCCAsertEnabled(const Consensus::Params& params, int64_t height)
+{
+    return IsBTCCLegacyAsertEnabled(params, height) || IsBTCCAsertEnabled(params, height);
+}
+
+static const CBlockIndex* GetBTCCAsertAnchor(const CBlockIndex* pindexLast, int anchor_height)
+{
     if (anchor_height < 0 || pindexLast->nHeight < anchor_height) return nullptr;
     return pindexLast->GetAncestor(anchor_height);
 }
 
-static unsigned int CalculateBTCCAsertWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params)
+static unsigned int ProductBits(const std::array<uint32_t, 9>& product)
+{
+    for (int pos = static_cast<int>(product.size()) - 1; pos >= 0; --pos) {
+        if (product[pos] == 0) continue;
+        for (int bit = 31; bit > 0; --bit) {
+            if (product[pos] & (1U << bit)) return 32 * pos + bit + 1;
+        }
+        return 32 * pos + 1;
+    }
+    return 0;
+}
+
+static arith_uint256 ShiftProductToTarget(const std::array<uint32_t, 9>& product, int64_t shift)
+{
+    arith_uint256 result{0};
+    for (size_t pos = 0; pos < product.size(); ++pos) {
+        if (product[pos] == 0) continue;
+
+        arith_uint256 part{product[pos]};
+        const int64_t limb_shift = static_cast<int64_t>(pos) * 32 + shift;
+        if (limb_shift >= 0) {
+            if (limb_shift >= 256) continue;
+            part <<= static_cast<unsigned int>(limb_shift);
+        } else {
+            const int64_t right_shift = -limb_shift;
+            if (right_shift >= 32) continue;
+            part >>= static_cast<unsigned int>(right_shift);
+        }
+        result |= part;
+    }
+    return result;
+}
+
+static arith_uint256 CalculateBTCCAsertTarget(const arith_uint256& anchor_target,
+                                              uint64_t factor,
+                                              int64_t shifts,
+                                              const arith_uint256& pow_limit)
+{
+    // ASERT's factor is up to 17 bits, so the pre-shift product can need 273 bits.
+    std::array<uint32_t, 9> product{};
+    const uint256 anchor_blob = ArithToUint256(anchor_target);
+
+    uint64_t carry = 0;
+    for (size_t pos = 0; pos < 8; ++pos) {
+        const uint64_t value =
+            carry + uint64_t{ReadLE32(anchor_blob.begin() + pos * 4)} * factor;
+        product[pos] = static_cast<uint32_t>(value & 0xffffffffU);
+        carry = value >> 32;
+    }
+    product[8] = static_cast<uint32_t>(carry);
+
+    const unsigned int product_bits = ProductBits(product);
+    const int64_t final_shift = shifts - 16;
+    const int64_t result_bits = static_cast<int64_t>(product_bits) + final_shift;
+    if (product_bits == 0 || result_bits <= 0) return arith_uint256{1};
+    if (result_bits > 256) return pow_limit;
+
+    arith_uint256 next_target = ShiftProductToTarget(product, final_shift);
+    if (next_target == 0) next_target = 1;
+    if (next_target > pow_limit) next_target = pow_limit;
+    return next_target;
+}
+
+static unsigned int CalculateBTCCAsertWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
+{
+    assert(pindexLast != nullptr);
+
+    const CBlockIndex* anchor = GetBTCCAsertAnchor(pindexLast, params.BTCCAsertHeight - 1);
+    if (anchor == nullptr) return pindexLast->nBits;
+    assert(anchor->pprev != nullptr);
+
+    const int64_t height_delta = pindexLast->nHeight - anchor->nHeight;
+    const int64_t time_delta = pindexLast->GetBlockTime() - anchor->pprev->GetBlockTime();
+    const int64_t ideal_time_delta = (height_delta + 1) * params.nPowTargetSpacing;
+
+    arith_uint256 anchor_target;
+    anchor_target.SetCompact(anchor->nBits);
+
+    // ASERT: target = anchor_target * 2^((time_delta - ideal_time_delta) / half_life)
+    // BCH-style fixed-point integer approximation of 2^x with 16 fractional bits.
+    static constexpr int64_t RADIX = 65536;
+    const int64_t exponent = ((time_delta - ideal_time_delta) * RADIX) / params.BTCCAsertHalfLife;
+    const int64_t shifts = exponent >> 16;
+    const uint64_t frac = static_cast<uint64_t>(exponent - (shifts * RADIX));
+
+    const uint64_t factor =
+        RADIX + ((195766423245049ULL * frac + 971821376ULL * frac * frac +
+                  5127ULL * frac * frac * frac + (1ULL << 47)) >> 48);
+    const arith_uint256 pow_limit = UintToArith256(params.powLimit);
+    const arith_uint256 next_target = CalculateBTCCAsertTarget(anchor_target, factor, shifts, pow_limit);
+    return next_target.GetCompact();
+}
+
+static unsigned int CalculateBTCCLegacyAsertWorkRequired(const CBlockIndex* pindexLast,
+                                                         const CBlockHeader* pblock,
+                                                         const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
     assert(pblock != nullptr);
 
-    const CBlockIndex* anchor = GetBTCCAsertAnchor(pindexLast, params);
+    const CBlockIndex* anchor = GetBTCCAsertAnchor(pindexLast, params.BTCCLegacyAsertHeight - 1);
     if (anchor == nullptr) return pindexLast->nBits;
 
     const int next_height = pindexLast->nHeight + 1;
@@ -39,14 +150,16 @@ static unsigned int CalculateBTCCAsertWorkRequired(const CBlockIndex* pindexLast
     arith_uint256 next_target;
     next_target.SetCompact(anchor->nBits);
 
-    // ASERT: target = anchor_target * 2^((time_diff - ideal_time_diff) / half_life)
-    // BCH-style fixed-point integer approximation of 2^x with 16 fractional bits.
+    // Preserve the original BTCC ASERT semantics for already-mined blocks before
+    // the BCH-style ASERT migration at BTCCAsertHeight.
     static constexpr int64_t RADIX = 65536;
     const int64_t exponent = ((time_diff - ideal_time_diff) * RADIX) / params.BTCCAsertHalfLife;
     const int64_t shifts = exponent >> 16;
     const uint64_t frac = static_cast<uint64_t>(exponent - (shifts * RADIX));
 
-    const uint64_t factor = RADIX + ((195766423245049ULL * frac + 971821376ULL * frac * frac + 5127ULL * frac * frac * frac + (1ULL << 47)) >> 48);
+    const uint64_t factor =
+        RADIX + ((195766423245049ULL * frac + 971821376ULL * frac * frac +
+                  5127ULL * frac * frac * frac + (1ULL << 47)) >> 48);
     next_target *= static_cast<uint32_t>(factor);
 
     if (shifts <= -256) {
@@ -75,8 +188,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     const int next_height = pindexLast->nHeight + 1;
+    if (IsBTCCLegacyAsertEnabled(params, next_height)) {
+        return CalculateBTCCLegacyAsertWorkRequired(pindexLast, pblock, params);
+    }
+
     if (IsBTCCAsertEnabled(params, next_height)) {
-        return CalculateBTCCAsertWorkRequired(pindexLast, pblock, params);
+        return CalculateBTCCAsertWorkRequired(pindexLast, params);
     }
 
     // Only change once per difficulty adjustment interval
@@ -153,7 +270,7 @@ bool PermittedDifficultyTransition(const Consensus::Params& params, int64_t heig
 {
     if (params.fPowAllowMinDifficultyBlocks) return true;
 
-    if (IsBTCCAsertEnabled(params, height)) return true;
+    if (IsAnyBTCCAsertEnabled(params, height)) return true;
 
     if (height % params.DifficultyAdjustmentInterval() == 0) {
         int64_t smallest_timespan = params.nPowTargetTimespan/4;
