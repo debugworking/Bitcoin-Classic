@@ -19,7 +19,7 @@ static bool IsBTCCAsertEnabled(const Consensus::Params& params, int64_t height)
     return params.BTCCAsertHeight > 0 && height >= params.BTCCAsertHeight && params.BTCCAsertHalfLife > 0;
 }
 
-static bool IsBTCCLegacyAsertEnabled(const Consensus::Params& params, int64_t height)
+bool IsBTCCLegacyAsertEnabled(const Consensus::Params& params, int64_t height)
 {
     return params.BTCCLegacyAsertHeight > 0 &&
            params.BTCCAsertHeight > params.BTCCLegacyAsertHeight &&
