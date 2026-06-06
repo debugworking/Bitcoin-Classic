@@ -116,7 +116,10 @@ struct Params {
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowTargetTimespan;
-    /** BTCC ASERT hard fork activation height (0 = disabled) */
+    /** BTCC legacy ASERT activation height for compatibility with the pre-upgrade chain
+     * (0 = disabled) */
+    int BTCCLegacyAsertHeight{0};
+    /** BTCC BCH-style ASERT activation height (0 = disabled) */
     int BTCCAsertHeight{0};
     /** BTCC ASERT half-life in seconds */
     int64_t BTCCAsertHalfLife{0};
